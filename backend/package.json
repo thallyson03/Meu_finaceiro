@@ -1,0 +1,27 @@
+{
+  "name": "meu-planejamento-backend",
+  "version": "0.1.0",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "nodemon --watch src --exec node src/index.js",
+    "start": "node src/index.js",
+    "prisma:migrate": "prisma migrate dev --name init",
+    "prisma:generate": "prisma generate"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.0.0",
+    "bcrypt": "^5.1.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
+    "multer": "^1.4.5-lts.1",
+    "prisma": "^5.0.0",
+    "react-icons": "^5.5.0",
+    "recharts": "^3.5.1",
+    "tesseract.js": "^4.0.2"
+  },
+  "devDependencies": {
+    "dotenv": "^16.0.3",
+    "nodemon": "^2.0.22"
+  }
+}

@@ -1,0 +1,272 @@
+/* Utilitários de Responsividade Customizados */
+
+/* Container com padding responsivo */
+.container-responsive {
+  @apply px-4 sm:px-6 lg:px-8;
+}
+
+/* Grid responsivo automático */
+.grid-responsive {
+  @apply grid gap-4 sm:gap-5 lg:gap-6;
+}
+
+.grid-cards-1 {
+  @apply grid-cols-1;
+}
+
+.grid-cards-2 {
+  @apply grid-cols-1 sm:grid-cols-2;
+}
+
+.grid-cards-3 {
+  @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+}
+
+.grid-cards-4 {
+  @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-4;
+}
+
+.grid-cards-6 {
+  @apply grid-cols-2 sm:grid-cols-3 lg:grid-cols-6;
+}
+
+/* Texto responsivo */
+.text-responsive-xs {
+  @apply text-xs sm:text-sm;
+}
+
+.text-responsive-sm {
+  @apply text-sm sm:text-base;
+}
+
+.text-responsive-base {
+  @apply text-base sm:text-lg;
+}
+
+.text-responsive-lg {
+  @apply text-lg sm:text-xl lg:text-2xl;
+}
+
+.text-responsive-xl {
+  @apply text-xl sm:text-2xl lg:text-3xl;
+}
+
+.text-responsive-2xl {
+  @apply text-2xl sm:text-3xl lg:text-4xl;
+}
+
+/* Espaçamento responsivo */
+.space-responsive {
+  @apply space-y-4 sm:space-y-5 lg:space-y-6;
+}
+
+/* Padding responsivo */
+.p-responsive {
+  @apply p-4 sm:p-5 lg:p-6;
+}
+
+.px-responsive {
+  @apply px-4 sm:px-5 lg:px-6;
+}
+
+.py-responsive {
+  @apply py-4 sm:py-5 lg:py-6;
+}
+
+/* Margem responsiva */
+.mb-responsive {
+  @apply mb-4 sm:mb-5 lg:mb-6;
+}
+
+.mt-responsive {
+  @apply mt-4 sm:mt-5 lg:mt-6;
+}
+
+/* Ocultar em mobile */
+.hide-mobile {
+  @apply hidden sm:block;
+}
+
+/* Ocultar em desktop */
+.hide-desktop {
+  @apply block sm:hidden;
+}
+
+/* Flex responsivo */
+.flex-responsive {
+  @apply flex flex-col sm:flex-row;
+}
+
+/* Botões responsivos */
+.btn-responsive {
+  @apply px-4 py-2 sm:px-5 sm:py-2.5 lg:px-6 lg:py-3;
+}
+
+/* Cards com altura responsiva */
+.card-responsive-height {
+  @apply h-auto sm:h-full;
+}
+
+/* Overflow responsivo para tabelas */
+.table-responsive {
+  @apply overflow-x-auto -mx-4 sm:mx-0;
+}
+
+.table-responsive table {
+  @apply min-w-full;
+}
+
+/* Scroll horizontal suave em mobile */
+.scroll-mobile {
+  @apply overflow-x-auto scrollbar-hide;
+}
+
+/* Esconder scrollbar */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Gráficos responsivos */
+.chart-container {
+  @apply w-full h-64 sm:h-72 lg:h-80;
+}
+
+.chart-container-sm {
+  @apply w-full h-48 sm:h-56 lg:h-64;
+}
+
+.chart-container-lg {
+  @apply w-full h-80 sm:h-96 lg:h-[28rem];
+}
+
+/* Modal responsivo */
+.modal-responsive {
+  @apply w-full max-w-full sm:max-w-lg lg:max-w-2xl mx-4 sm:mx-auto;
+}
+
+/* Input responsivo */
+.input-responsive {
+  @apply text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-2.5;
+}
+
+/* Badge/Tag responsivo */
+.badge-responsive {
+  @apply text-xs sm:text-sm px-2 py-0.5 sm:px-2.5 sm:py-1;
+}
+
+/* Ícone responsivo */
+.icon-responsive {
+  @apply w-4 h-4 sm:w-5 sm:h-5;
+}
+
+.icon-responsive-lg {
+  @apply w-5 h-5 sm:w-6 sm:h-6;
+}
+
+/* Sombra responsiva */
+.shadow-responsive {
+  @apply shadow-sm sm:shadow md:shadow-md;
+}
+
+/* Arredondamento responsivo */
+.rounded-responsive {
+  @apply rounded-lg sm:rounded-xl;
+}
+
+/* Gap responsivo */
+.gap-responsive {
+  @apply gap-3 sm:gap-4 lg:gap-5;
+}
+
+.gap-responsive-sm {
+  @apply gap-2 sm:gap-3 lg:gap-4;
+}
+
+/* Stack vertical em mobile, horizontal em desktop */
+.stack-responsive {
+  @apply flex flex-col sm:flex-row items-stretch sm:items-center;
+}
+
+/* Centralizar em mobile */
+.center-mobile {
+  @apply text-center sm:text-left;
+}
+
+/* Largura máxima responsiva */
+.max-w-responsive {
+  @apply max-w-full sm:max-w-screen-sm md:max-w-screen-md lg:max-w-screen-lg xl:max-w-screen-xl;
+}
+
+/* Ajuste de fonte para mobile */
+@media (max-width: 640px) {
+  .font-responsive {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+}
+
+/* Ajuste de altura de linha em mobile */
+.leading-responsive {
+  @apply leading-normal sm:leading-relaxed;
+}
+
+/* Truncate text com responsividade */
+.truncate-responsive {
+  @apply truncate sm:overflow-visible sm:whitespace-normal;
+}
+
+/* Sidebar mobile adjustment */
+@media (max-width: 1024px) {
+  .mobile-menu-active {
+    overflow: hidden;
+  }
+}
+
+/* Touch targets maiores em mobile */
+@media (max-width: 640px) {
+  button, 
+  a, 
+  input[type="button"],
+  input[type="submit"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Prevenir quebras indesejadas */
+.no-break {
+  @apply whitespace-nowrap;
+}
+
+/* Grid de dashboard responsivo */
+.dashboard-grid {
+  @apply grid gap-4 sm:gap-5 lg:gap-6;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+/* Ajustes específicos para gráficos em mobile */
+@media (max-width: 640px) {
+  .recharts-wrapper {
+    margin-left: -20px;
+  }
+  
+  .recharts-cartesian-axis-tick-value {
+    font-size: 10px;
+  }
+}
+
+/* Melhorias de toque */
+@media (hover: none) and (pointer: coarse) {
+  /* Dispositivos touch */
+  button:active,
+  a:active {
+    opacity: 0.7;
+  }
+}
+
+
