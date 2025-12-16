@@ -309,17 +309,25 @@ export default function Dashboard(){
                   data={pieData}
                   cx="50%"
                   cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
+                  outerRadius={90}
+                  innerRadius={40}
                   fill="#8884d8"
                   dataKey="value"
+                  paddingAngle={2}
                 >
                   {pieData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => `R$ ${value.toFixed(2)}`} />
+                <Tooltip 
+                  formatter={(value, name) => [`R$ ${value.toFixed(2)}`, name]}
+                  contentStyle={{ 
+                    backgroundColor: '#fff', 
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
           ) : (
@@ -345,10 +353,17 @@ export default function Dashboard(){
           </div>
           {projection.length > 0 ? (
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={projection.slice(0, 6)}>
+              <BarChart data={projection.slice(0, 6)} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
                 <XAxis dataKey="month" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-                <YAxis axisLine={false} tickLine={false} />
-                <Tooltip formatter={(value) => `R$ ${value.toFixed(2)}`} />
+                <Tooltip 
+                  formatter={(value) => [`R$ ${value.toFixed(2)}`, 'Valor']}
+                  contentStyle={{ 
+                    backgroundColor: '#fff', 
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'
+                  }}
+                />
                 <Bar dataKey="amount" fill="#00D09C" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
