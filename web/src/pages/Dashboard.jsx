@@ -5,12 +5,13 @@ import StatCard from '../components/StatCard'
 import Card from '../components/Card'
 import MonthSelector, { useMonthSelector, MONTH_NAMES } from '../components/MonthSelector'
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts'
-import { FiDollarSign, FiTrendingUp, FiTrendingDown, FiTarget, FiCheckCircle, FiAlertCircle, FiCreditCard, FiCalendar, FiClock, FiBarChart2, FiArrowRight } from 'react-icons/fi'
+import { FiDollarSign, FiTrendingUp, FiTrendingDown, FiTarget, FiCheckCircle, FiAlertCircle, FiCreditCard, FiCalendar, FiClock, FiBarChart2, FiArrowRight, FiRepeat } from 'react-icons/fi'
 
 export default function Dashboard(){
   const [financialData, setFinancialData] = useState(null)
   const [installmentsData, setInstallmentsData] = useState(null)
   const [monthlyBalance, setMonthlyBalance] = useState(null)
+  const [recurringData, setRecurringData] = useState(null)
   const [loading, setLoading] = useState(true)
   
   // Hook para seletor de mês
@@ -36,9 +37,10 @@ export default function Dashboard(){
       api.get(`/budget/summary?month=${selectedMonth}&year=${selectedYear}`, { headers: { Authorization: `Bearer ${token}` } }),
       api.get('/installments', { headers: { Authorization: `Bearer ${token}` } }),
       api.get('/installments/monthly-balance', { headers: { Authorization: `Bearer ${token}` } }),
-      api.get('/installments/future-projection', { headers: { Authorization: `Bearer ${token}` } })
+      api.get('/installments/future-projection', { headers: { Authorization: `Bearer ${token}` } }),
+      api.get(`/recurring/summary?month=${selectedMonth}&year=${selectedYear}`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: null }))
     ])
-      .then(([summaryRes, budgetRes, installmentsRes, balanceRes, projectionRes]) => {
+      .then(([summaryRes, budgetRes, installmentsRes, balanceRes, projectionRes, recurringRes]) => {
         setFinancialData({
           ...summaryRes.data,
           budgetComparison: budgetRes.data.budgetComparison || []
@@ -48,6 +50,7 @@ export default function Dashboard(){
           projection: projectionRes.data.projection || []
         })
         setMonthlyBalance(balanceRes.data)
+        setRecurringData(recurringRes.data)
         setLoading(false)
       })
       .catch(err => {
@@ -276,6 +279,39 @@ export default function Dashboard(){
           </Card>
         )}
       </div>
+
+      {/* Card de Recorrentes */}
+      {recurringData && recurringData.count > 0 && (
+        <Card className="bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-purple-100 rounded-xl">
+                <FiRepeat className="text-purple-600" size={24} />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-purple-700">Lançamentos Recorrentes do Mês</p>
+                <div className="flex items-center gap-4 mt-1">
+                  <span className="text-sm text-green-600 font-medium">
+                    +R$ {recurringData.totalIncome?.toFixed(2) || '0.00'}
+                  </span>
+                  <span className="text-sm text-red-600 font-medium">
+                    -R$ {recurringData.totalExpense?.toFixed(2) || '0.00'}
+                  </span>
+                  <span className={`text-sm font-bold ${recurringData.balance >= 0 ? 'text-emerald-600' : 'text-orange-600'}`}>
+                    = R$ {recurringData.balance?.toFixed(2) || '0.00'}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <button 
+              onClick={() => navigate('/recurring')}
+              className="px-3 py-1 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 transition-colors flex items-center gap-1"
+            >
+              Ver <FiArrowRight />
+            </button>
+          </div>
+        </Card>
+      )}
 
       {/* Próximas Parcelas a Vencer */}
       {upcomingInstallments.length > 0 && (

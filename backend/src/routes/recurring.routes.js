@@ -8,6 +8,7 @@ router.use(authMiddleware)
 
 // CRUD de lançamentos recorrentes
 router.get('/', recurringController.getRecurringTransactions)
+router.get('/summary', recurringController.getRecurringSummaryForMonth)
 router.post('/', recurringController.createRecurringTransaction)
 router.put('/:id', recurringController.updateRecurringTransaction)
 router.delete('/:id', recurringController.deleteRecurringTransaction)

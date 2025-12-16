@@ -68,6 +68,37 @@ async function createRecurringTransaction(req, res) {
       include: { account: true }
     })
 
+    // Gerar automaticamente a transação do mês atual se a data de início já passou
+    const now = new Date()
+    const recurringStartDate = new Date(startDate || now)
+    
+    if (recurringStartDate <= now) {
+      const currentMonth = now.getMonth()
+      const currentYear = now.getFullYear()
+      const transactionDay = dayOfMonth || recurringStartDate.getDate() || 1
+      const transactionDate = new Date(currentYear, currentMonth, transactionDay)
+      
+      // Criar a transação do mês atual
+      await prisma.transaction.create({
+        data: {
+          userId: req.userId,
+          description: `${description} (Recorrente)`,
+          category,
+          amount: parseFloat(amount),
+          type,
+          date: transactionDate,
+          accountId: accountId ? parseInt(accountId) : null,
+          isPaid: false
+        }
+      })
+
+      // Atualizar lastGenerated
+      await prisma.recurringTransaction.update({
+        where: { id: recurring.id },
+        data: { lastGenerated: now }
+      })
+    }
+
     res.status(201).json(recurring)
   } catch (error) {
     console.error('Erro ao criar lançamento recorrente:', error)
@@ -266,12 +297,68 @@ function calculateNextDate(recurring) {
   return nextDate
 }
 
+// Obter resumo de recorrentes para o mês
+async function getRecurringSummaryForMonth(req, res) {
+  try {
+    const { month, year } = req.query
+    const now = new Date()
+    const targetMonth = month ? parseInt(month) : now.getMonth() + 1
+    const targetYear = year ? parseInt(year) : now.getFullYear()
+
+    const activeRecurring = await prisma.recurringTransaction.findMany({
+      where: { 
+        userId: req.userId,
+        isActive: true,
+        startDate: { lte: new Date(targetYear, targetMonth - 1, 28) },
+        OR: [
+          { endDate: null },
+          { endDate: { gte: new Date(targetYear, targetMonth - 1, 1) } }
+        ]
+      }
+    })
+
+    const monthlyIncome = activeRecurring
+      .filter(r => r.type === 'income' && r.frequency === 'monthly')
+      .reduce((sum, r) => sum + r.amount, 0)
+
+    const monthlyExpense = activeRecurring
+      .filter(r => r.type === 'expense' && r.frequency === 'monthly')
+      .reduce((sum, r) => sum + r.amount, 0)
+
+    // Calcular semanal (aproximado para o mês)
+    const weeklyIncome = activeRecurring
+      .filter(r => r.type === 'income' && r.frequency === 'weekly')
+      .reduce((sum, r) => sum + (r.amount * 4), 0)
+
+    const weeklyExpense = activeRecurring
+      .filter(r => r.type === 'expense' && r.frequency === 'weekly')
+      .reduce((sum, r) => sum + (r.amount * 4), 0)
+
+    res.json({
+      month: targetMonth,
+      year: targetYear,
+      totalIncome: monthlyIncome + weeklyIncome,
+      totalExpense: monthlyExpense + weeklyExpense,
+      balance: (monthlyIncome + weeklyIncome) - (monthlyExpense + weeklyExpense),
+      count: activeRecurring.length,
+      details: {
+        incomes: activeRecurring.filter(r => r.type === 'income'),
+        expenses: activeRecurring.filter(r => r.type === 'expense')
+      }
+    })
+  } catch (error) {
+    console.error('Erro ao obter resumo de recorrentes:', error)
+    res.status(500).json({ error: 'Erro ao obter resumo' })
+  }
+}
+
 module.exports = {
   getRecurringTransactions,
   createRecurringTransaction,
   updateRecurringTransaction,
   deleteRecurringTransaction,
   generatePendingTransactions,
-  toggleRecurringStatus
+  toggleRecurringStatus,
+  getRecurringSummaryForMonth
 }
 
