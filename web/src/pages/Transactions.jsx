@@ -144,7 +144,7 @@ export default function Transactions(){
               setShowForm(!showForm)
               setShowUpload(false)
             }}
-            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-emerald-500 rounded-lg hover:bg-emerald-600 transition-colors shadow-sm"
           >
             <FiPlus size={16} />
             Nova Transação
