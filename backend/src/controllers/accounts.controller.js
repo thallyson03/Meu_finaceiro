@@ -4,7 +4,7 @@ const prisma = require('../lib/prismaClient')
 async function getAccounts(req, res) {
   try {
     const accounts = await prisma.account.findMany({
-      where: { userId: req.user.id },
+      where: { userId: req.userId },
       orderBy: { createdAt: 'asc' }
     })
 
@@ -71,7 +71,7 @@ async function createAccount(req, res) {
 
     const account = await prisma.account.create({
       data: {
-        userId: req.user.id,
+        userId: req.userId,
         name,
         type,
         balance: parseFloat(balance || 0),
@@ -94,7 +94,7 @@ async function updateAccount(req, res) {
     const { name, type, balance, color, icon, isActive } = req.body
 
     const existing = await prisma.account.findFirst({
-      where: { id: parseInt(id), userId: req.user.id }
+      where: { id: parseInt(id), userId: req.userId }
     })
 
     if (!existing) {
@@ -126,7 +126,7 @@ async function deleteAccount(req, res) {
     const { id } = req.params
 
     const existing = await prisma.account.findFirst({
-      where: { id: parseInt(id), userId: req.user.id }
+      where: { id: parseInt(id), userId: req.userId }
     })
 
     if (!existing) {
@@ -172,11 +172,11 @@ async function transferBetweenAccounts(req, res) {
     }
 
     const fromAccount = await prisma.account.findFirst({
-      where: { id: parseInt(fromAccountId), userId: req.user.id }
+      where: { id: parseInt(fromAccountId), userId: req.userId }
     })
 
     const toAccount = await prisma.account.findFirst({
-      where: { id: parseInt(toAccountId), userId: req.user.id }
+      where: { id: parseInt(toAccountId), userId: req.userId }
     })
 
     if (!fromAccount || !toAccount) {
@@ -189,7 +189,7 @@ async function transferBetweenAccounts(req, res) {
     // Criar transação de saída
     const outTransaction = await prisma.transaction.create({
       data: {
-        userId: req.user.id,
+        userId: req.userId,
         description: description || `Transferência para ${toAccount.name}`,
         category: 'Transferência',
         amount: -transferAmount,
@@ -203,7 +203,7 @@ async function transferBetweenAccounts(req, res) {
     // Criar transação de entrada
     const inTransaction = await prisma.transaction.create({
       data: {
-        userId: req.user.id,
+        userId: req.userId,
         description: description || `Transferência de ${fromAccount.name}`,
         category: 'Transferência',
         amount: transferAmount,
@@ -232,7 +232,7 @@ async function getAccountTransactions(req, res) {
     const { limit = 50 } = req.query
 
     const account = await prisma.account.findFirst({
-      where: { id: parseInt(id), userId: req.user.id }
+      where: { id: parseInt(id), userId: req.userId }
     })
 
     if (!account) {

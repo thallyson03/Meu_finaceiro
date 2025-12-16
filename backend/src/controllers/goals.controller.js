@@ -4,7 +4,7 @@ const prisma = require('../lib/prismaClient')
 async function getGoals(req, res) {
   try {
     const goals = await prisma.goal.findMany({
-      where: { userId: req.user.id },
+      where: { userId: req.userId },
       orderBy: { createdAt: 'desc' }
     })
 
@@ -51,7 +51,7 @@ async function createGoal(req, res) {
 
     const goal = await prisma.goal.create({
       data: {
-        userId: req.user.id,
+        userId: req.userId,
         name,
         targetAmount: parseFloat(targetAmount),
         currentAmount: parseFloat(currentAmount || 0),
@@ -77,7 +77,7 @@ async function updateGoal(req, res) {
     const { name, targetAmount, currentAmount, deadline, category, color, icon, addAmount } = req.body
 
     const existingGoal = await prisma.goal.findFirst({
-      where: { id: parseInt(id), userId: req.user.id }
+      where: { id: parseInt(id), userId: req.userId }
     })
 
     if (!existingGoal) {
@@ -124,7 +124,7 @@ async function deleteGoal(req, res) {
     const { id } = req.params
 
     const existingGoal = await prisma.goal.findFirst({
-      where: { id: parseInt(id), userId: req.user.id }
+      where: { id: parseInt(id), userId: req.userId }
     })
 
     if (!existingGoal) {
@@ -153,7 +153,7 @@ async function addToGoal(req, res) {
     }
 
     const existingGoal = await prisma.goal.findFirst({
-      where: { id: parseInt(id), userId: req.user.id }
+      where: { id: parseInt(id), userId: req.userId }
     })
 
     if (!existingGoal) {

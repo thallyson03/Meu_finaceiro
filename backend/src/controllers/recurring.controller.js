@@ -4,7 +4,7 @@ const prisma = require('../lib/prismaClient')
 async function getRecurringTransactions(req, res) {
   try {
     const recurring = await prisma.recurringTransaction.findMany({
-      where: { userId: req.user.id },
+      where: { userId: req.userId },
       include: { account: true },
       orderBy: { createdAt: 'desc' }
     })
@@ -53,7 +53,7 @@ async function createRecurringTransaction(req, res) {
 
     const recurring = await prisma.recurringTransaction.create({
       data: {
-        userId: req.user.id,
+        userId: req.userId,
         description,
         category,
         amount: parseFloat(amount),
@@ -85,7 +85,7 @@ async function updateRecurringTransaction(req, res) {
     } = req.body
 
     const existing = await prisma.recurringTransaction.findFirst({
-      where: { id: parseInt(id), userId: req.user.id }
+      where: { id: parseInt(id), userId: req.userId }
     })
 
     if (!existing) {
@@ -123,7 +123,7 @@ async function deleteRecurringTransaction(req, res) {
     const { id } = req.params
 
     const existing = await prisma.recurringTransaction.findFirst({
-      where: { id: parseInt(id), userId: req.user.id }
+      where: { id: parseInt(id), userId: req.userId }
     })
 
     if (!existing) {
@@ -150,7 +150,7 @@ async function generatePendingTransactions(req, res) {
 
     const activeRecurring = await prisma.recurringTransaction.findMany({
       where: { 
-        userId: req.user.id,
+        userId: req.userId,
         isActive: true,
         startDate: { lte: now },
         OR: [
@@ -166,7 +166,7 @@ async function generatePendingTransactions(req, res) {
       // Verificar se já foi gerada transação para este mês
       const existingTransaction = await prisma.transaction.findFirst({
         where: {
-          userId: req.user.id,
+          userId: req.userId,
           description: { contains: recurring.description },
           date: {
             gte: new Date(currentYear, currentMonth, 1),
@@ -181,7 +181,7 @@ async function generatePendingTransactions(req, res) {
         
         const transaction = await prisma.transaction.create({
           data: {
-            userId: req.user.id,
+            userId: req.userId,
             description: `${recurring.description} (Recorrente)`,
             category: recurring.category,
             amount: recurring.type === 'expense' ? -Math.abs(recurring.amount) : Math.abs(recurring.amount),
@@ -218,7 +218,7 @@ async function toggleRecurringStatus(req, res) {
     const { id } = req.params
 
     const existing = await prisma.recurringTransaction.findFirst({
-      where: { id: parseInt(id), userId: req.user.id }
+      where: { id: parseInt(id), userId: req.userId }
     })
 
     if (!existing) {

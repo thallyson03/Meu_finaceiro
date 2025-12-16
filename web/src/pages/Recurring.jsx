@@ -398,20 +398,21 @@ export default function Recurring() {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900">
-                  {editingItem ? 'Editar Lançamento' : 'Novo Lançamento Recorrente'}
-                </h2>
-                <button 
-                  onClick={resetForm}
-                  className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
-                >
-                  <FiX size={20} />
-                </button>
-              </div>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl w-full max-w-md my-4 shadow-xl">
+            <div className="sticky top-0 bg-white rounded-t-2xl border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-gray-900">
+                {editingItem ? 'Editar Lançamento' : 'Novo Lançamento'}
+              </h2>
+              <button 
+                onClick={resetForm}
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <FiX size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6 max-h-[70vh] overflow-y-auto">
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Tipo */}
@@ -451,23 +452,26 @@ export default function Recurring() {
                   required
                 />
 
-                <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    label="Valor"
-                    type="number"
-                    step="0.01"
-                    placeholder="1500.00"
-                    value={formData.amount}
-                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                    required
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Valor (R$)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="1500.00"
+                      value={formData.amount}
+                      onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
                     <select
                       value={formData.category}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                     >
                       {(formData.type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES).map((cat) => (
                         <option key={cat} value={cat}>{cat}</option>
@@ -528,20 +532,31 @@ export default function Recurring() {
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    label="Data de início"
-                    type="date"
-                    value={formData.startDate}
-                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                    required
-                  />
-                  <Input
-                    label="Data de fim (opcional)"
-                    type="date"
-                    value={formData.endDate}
-                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                  />
+                {/* Datas */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Data de início
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.startDate}
+                      onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Data de fim <span className="text-gray-400 font-normal">(opcional)</span>
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.endDate}
+                      onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    />
+                  </div>
                 </div>
 
                 {/* Conta (se houver contas cadastradas) */}
@@ -561,13 +576,20 @@ export default function Recurring() {
                   </div>
                 )}
 
-                <div className="flex gap-3 pt-4">
-                  <Button type="button" variant="secondary" onClick={resetForm} className="flex-1">
+                <div className="flex gap-3 pt-4 sticky bottom-0 bg-white pb-2">
+                  <button 
+                    type="button" 
+                    onClick={resetForm} 
+                    className="flex-1 py-3 px-4 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors"
+                  >
                     Cancelar
-                  </Button>
-                  <Button type="submit" className="flex-1">
+                  </button>
+                  <button 
+                    type="submit" 
+                    className="flex-1 py-3 px-4 bg-emerald-500 text-white rounded-xl font-medium hover:bg-emerald-600 transition-colors"
+                  >
                     {editingItem ? 'Salvar' : 'Criar'}
-                  </Button>
+                  </button>
                 </div>
               </form>
             </div>

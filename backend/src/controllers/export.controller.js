@@ -5,7 +5,7 @@ async function exportTransactionsCSV(req, res) {
   try {
     const { startDate, endDate, type } = req.query
 
-    const where = { userId: req.user.id }
+    const where = { userId: req.userId }
     
     if (startDate || endDate) {
       where.date = {}
@@ -53,7 +53,7 @@ async function exportTransactionsCSV(req, res) {
 // Exportar relatório completo em JSON
 async function exportFullReport(req, res) {
   try {
-    const userId = req.user.id
+    const userId = req.userId
 
     const [transactions, budgets, goals, recurring, accounts] = await Promise.all([
       prisma.transaction.findMany({
@@ -115,7 +115,7 @@ async function exportFullReport(req, res) {
 async function exportPrintableReport(req, res) {
   try {
     const { month, year } = req.query
-    const userId = req.user.id
+    const userId = req.userId
 
     const currentMonth = month ? parseInt(month) : new Date().getMonth() + 1
     const currentYear = year ? parseInt(year) : new Date().getFullYear()
