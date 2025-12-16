@@ -4,7 +4,7 @@ import api from '../api/api'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import Input from '../components/Input'
-import { FiPlus, FiX, FiDollarSign, FiCalendar, FiTrendingUp } from 'react-icons/fi'
+import { FiPlus, FiX, FiDollarSign, FiCalendar, FiTrendingUp, FiTrash2 } from 'react-icons/fi'
 
 export default function Incomes(){
   const [incomes, setIncomes] = useState([])
@@ -64,6 +64,22 @@ export default function Incomes(){
       alert('Erro ao registrar receita')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Tem certeza que deseja excluir esta receita?')) {
+      return
+    }
+    
+    try {
+      await api.delete(`/transactions/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      loadIncomes()
+    } catch (err) {
+      alert('Erro ao excluir receita')
+      console.error(err)
     }
   }
   
@@ -210,10 +226,19 @@ export default function Incomes(){
                     </div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-lg font-bold text-green-600">
-                    + R$ {income.amount.toFixed(2)}
-                  </p>
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <p className="text-lg font-bold text-green-600">
+                      + R$ {income.amount.toFixed(2)}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleDelete(income.id)}
+                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Excluir receita"
+                  >
+                    <FiTrash2 size={18} />
+                  </button>
                 </div>
               </div>
             ))}
