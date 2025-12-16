@@ -24,7 +24,8 @@ export default function Transactions(){
     date: new Date().toISOString().split('T')[0],
     card: '',
     installments: '',
-    isPaid: true,
+    isPaid: false, // Começa como pendente
+    accountId: '', // Conta/cartão selecionado
     installmentMode: 'total' // 'total' = valor total dividido | 'perInstallment' = valor por parcela
   })
 
@@ -109,10 +110,15 @@ export default function Transactions(){
       // Determina o valor total baseado no modo de parcelas
       const finalAmount = calculatedValues.totalAmount
       
+      // Se selecionou conta/cartão, já marca como pago
+      const isPaid = formData.accountId ? true : false
+      
       await api.post('/transactions', {
         ...formData,
         amount: finalAmount,
-        installments: formData.installments ? parseInt(formData.installments) : null
+        installments: formData.installments ? parseInt(formData.installments) : null,
+        accountId: formData.accountId ? parseInt(formData.accountId) : null,
+        isPaid
       }, { 
         headers: { Authorization: `Bearer ${token}` } 
       })
@@ -125,13 +131,15 @@ export default function Transactions(){
         date: new Date().toISOString().split('T')[0],
         card: '',
         installments: '',
-        isPaid: true,
+        isPaid: false,
+        accountId: '',
         installmentMode: 'total'
       })
       setShowForm(false)
       loadTransactions()
+      loadAccounts() // Atualiza saldos das contas
     } catch (err) {
-      alert('Erro ao criar transação')
+      alert(err.response?.data?.error || 'Erro ao criar transação')
     } finally {
       setLoading(false)
     }
@@ -344,13 +352,55 @@ export default function Transactions(){
                 required
               />
               
-              <Input
-                label="Cartão (opcional)"
-                value={formData.card}
-                onChange={(e) => setFormData({...formData, card: e.target.value})}
-                placeholder="Ex: Nubank"
-                icon={FiCreditCard}
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {formData.type === 'expense' ? 'Pagar com (opcional)' : 'Receber em (opcional)'}
+                </label>
+                <div className="relative">
+                  <FiCreditCard className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                  <select
+                    value={formData.accountId}
+                    onChange={(e) => setFormData({...formData, accountId: e.target.value})}
+                    className="w-full px-4 py-2.5 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                  >
+                    <option value="">Deixar pendente...</option>
+                    {formData.type === 'expense' ? (
+                      <>
+                        {accounts.length > 0 && (
+                          <optgroup label="💰 Contas">
+                            {accounts.map(acc => (
+                              <option key={acc.id} value={acc.id}>
+                                {acc.name} - Saldo: R$ {acc.balance?.toFixed(2)}
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
+                        {creditCards.length > 0 && (
+                          <optgroup label="💳 Cartões de Crédito">
+                            {creditCards.map(card => (
+                              <option key={card.id} value={card.id}>
+                                {card.name} - Disponível: R$ {((card.creditLimit || 0) - (card.usedCredit || 0)).toFixed(2)}
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
+                      </>
+                    ) : (
+                      // Para receitas, só mostrar contas (não cartões)
+                      accounts.map(acc => (
+                        <option key={acc.id} value={acc.id}>
+                          {acc.name} - Saldo: R$ {acc.balance?.toFixed(2)}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                </div>
+                {formData.accountId && (
+                  <p className="text-xs text-emerald-600 mt-1">
+                    ✓ Será {formData.type === 'expense' ? 'debitado' : 'creditado'} automaticamente
+                  </p>
+                )}
+              </div>
               
               <Input
                 label="Parcelas (opcional)"

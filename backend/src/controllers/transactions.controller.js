@@ -9,18 +9,57 @@ exports.list = async (req, res, next) => {
 
 exports.create = async (req, res, next) => {
   try {
-    const { description, category, amount, date, card, installments, isPaid, type } = req.body;
+    const { description, category, amount, date, card, installments, isPaid, type, accountId } = req.body;
+    const parsedAmount = parseFloat(amount);
+    const transactionType = type || 'expense';
+    
+    // Se tiver conta/cartão e estiver marcado como pago, atualizar saldo
+    if (accountId && isPaid) {
+      const account = await prisma.account.findFirst({
+        where: { id: parseInt(accountId), userId: req.userId }
+      });
+      
+      if (!account) {
+        return res.status(404).json({ error: 'Conta não encontrada' });
+      }
+      
+      if (account.type === 'credit') {
+        // Para cartão de crédito, aumentar crédito usado
+        if (transactionType === 'expense') {
+          const newUsedCredit = (account.usedCredit || 0) + parsedAmount;
+          if (newUsedCredit > account.creditLimit) {
+            return res.status(400).json({ error: 'Limite de crédito excedido' });
+          }
+          await prisma.account.update({
+            where: { id: account.id },
+            data: { usedCredit: newUsedCredit }
+          });
+        }
+      } else {
+        // Para contas normais, debitar/creditar
+        const newBalance = transactionType === 'expense'
+          ? account.balance - parsedAmount
+          : account.balance + parsedAmount;
+        
+        await prisma.account.update({
+          where: { id: account.id },
+          data: { balance: newBalance }
+        });
+      }
+    }
+    
     const tx = await prisma.transaction.create({ 
       data: { 
         userId: req.userId, 
         description, 
         category, 
-        amount: parseFloat(amount), 
+        amount: parsedAmount, 
         date: new Date(date), 
         card, 
         installments: installments ? parseInt(installments) : null,
         isPaid: isPaid !== undefined ? isPaid : true,
-        type: type || 'expense'
+        type: transactionType,
+        accountId: accountId ? parseInt(accountId) : null
       } 
     });
     res.status(201).json(tx);
