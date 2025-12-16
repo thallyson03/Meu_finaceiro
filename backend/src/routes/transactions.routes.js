@@ -8,5 +8,7 @@ router.get('/', transactionsController.list);
 router.post('/', transactionsController.create);
 router.get('/summary', transactionsController.summary);
 router.delete('/:id', transactionsController.delete);
+router.post('/:id/pay', transactionsController.pay); // Pagar despesa
+router.post('/:id/receive', transactionsController.receive); // Receber receita
 
 module.exports = router;

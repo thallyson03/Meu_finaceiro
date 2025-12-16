@@ -32,6 +32,7 @@ export default function Accounts() {
     name: '',
     type: 'checking',
     balance: '',
+    creditLimit: '',
     color: '#3B82F6'
   })
   const [transferData, setTransferData] = useState({
@@ -114,6 +115,7 @@ export default function Accounts() {
       name: '',
       type: 'checking',
       balance: '',
+      creditLimit: '',
       color: '#3B82F6'
     })
   }
@@ -124,6 +126,7 @@ export default function Accounts() {
       name: account.name,
       type: account.type,
       balance: account.balance.toString(),
+      creditLimit: account.creditLimit?.toString() || '',
       color: account.color
     })
     setShowModal(true)
@@ -161,35 +164,80 @@ export default function Accounts() {
         </div>
       </div>
 
-      {/* Summary */}
-      <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+      {/* Summary - Patrimônio */}
+      <Card className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div className="text-center">
-            <p className="text-blue-100 text-sm">Patrimônio Total</p>
+            <p className="text-emerald-100 text-sm">💰 Patrimônio Total</p>
             <p className="text-3xl font-bold mt-1">
-              R$ {(summary.totalBalance || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              R$ {(summary.patrimonio || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </p>
+            <p className="text-xs text-emerald-200 mt-1">Não inclui cartões</p>
           </div>
           <div className="text-center">
-            <p className="text-blue-100 text-sm">Contas Correntes</p>
+            <p className="text-emerald-100 text-sm">Contas Correntes</p>
             <p className="text-xl font-bold mt-1">
               R$ {(summary.byType?.checking || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </p>
           </div>
           <div className="text-center">
-            <p className="text-blue-100 text-sm">Poupança</p>
+            <p className="text-emerald-100 text-sm">Poupança</p>
             <p className="text-xl font-bold mt-1">
               R$ {(summary.byType?.savings || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </p>
           </div>
           <div className="text-center">
-            <p className="text-blue-100 text-sm">Investimentos</p>
+            <p className="text-emerald-100 text-sm">Investimentos</p>
             <p className="text-xl font-bold mt-1">
               R$ {(summary.byType?.investment || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
             </p>
           </div>
         </div>
       </Card>
+
+      {/* Summary - Cartões de Crédito */}
+      {summary.creditCards && (summary.creditCards.totalLimit > 0) && (
+        <Card className="bg-gradient-to-r from-red-500 to-orange-500 text-white">
+          <div className="flex items-center gap-2 mb-4">
+            <FiCreditCard size={24} />
+            <h3 className="text-lg font-semibold">Cartões de Crédito</h3>
+          </div>
+          <div className="grid grid-cols-3 gap-6">
+            <div className="text-center">
+              <p className="text-red-100 text-sm">Limite Total</p>
+              <p className="text-xl font-bold mt-1">
+                R$ {(summary.creditCards.totalLimit || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-red-100 text-sm">Usado</p>
+              <p className="text-xl font-bold mt-1">
+                R$ {(summary.creditCards.usedCredit || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-red-100 text-sm">Disponível</p>
+              <p className="text-xl font-bold mt-1">
+                R$ {(summary.creditCards.availableCredit || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </p>
+            </div>
+          </div>
+          {/* Barra de progresso */}
+          <div className="mt-4">
+            <div className="w-full bg-white bg-opacity-30 rounded-full h-2">
+              <div 
+                className="bg-white h-2 rounded-full transition-all duration-500"
+                style={{ 
+                  width: `${Math.min(100, ((summary.creditCards.usedCredit || 0) / (summary.creditCards.totalLimit || 1)) * 100)}%` 
+                }}
+              />
+            </div>
+            <p className="text-xs text-red-100 mt-1 text-right">
+              {((summary.creditCards.usedCredit || 0) / (summary.creditCards.totalLimit || 1) * 100).toFixed(1)}% utilizado
+            </p>
+          </div>
+        </Card>
+      )}
 
       {/* Accounts Grid */}
       {accounts.length === 0 ? (
@@ -243,12 +291,52 @@ export default function Accounts() {
                   <p className="text-sm text-gray-500">{typeInfo.label}</p>
                 </div>
 
-                <div className="mt-4">
-                  <p className="text-sm text-gray-500">Saldo</p>
-                  <p className={`text-2xl font-bold ${account.calculatedBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    R$ {account.calculatedBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </p>
-                </div>
+                {account.type === 'credit' ? (
+                  // Exibição para cartão de crédito
+                  <div className="mt-4 space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">Limite</span>
+                      <span className="font-semibold text-gray-900">
+                        R$ {(account.creditLimit || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">Usado</span>
+                      <span className="font-semibold text-red-600">
+                        R$ {(account.usedCredit || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">Disponível</span>
+                      <span className="font-semibold text-green-600">
+                        R$ {((account.creditLimit || 0) - (account.usedCredit || 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                    {/* Barra de uso */}
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className={`h-2 rounded-full transition-all duration-500 ${
+                          ((account.usedCredit || 0) / (account.creditLimit || 1)) > 0.8 
+                            ? 'bg-red-500' 
+                            : ((account.usedCredit || 0) / (account.creditLimit || 1)) > 0.5 
+                              ? 'bg-yellow-500' 
+                              : 'bg-green-500'
+                        }`}
+                        style={{ 
+                          width: `${Math.min(100, ((account.usedCredit || 0) / (account.creditLimit || 1)) * 100)}%` 
+                        }}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  // Exibição para contas normais
+                  <div className="mt-4">
+                    <p className="text-sm text-gray-500">Saldo</p>
+                    <p className={`text-2xl font-bold ${account.calculatedBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      R$ {account.calculatedBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                )}
 
                 {account.transactionCount > 0 && (
                   <div className="mt-4 pt-4 border-t border-gray-100">
@@ -313,14 +401,26 @@ export default function Accounts() {
                   </div>
                 </div>
 
-                <Input
-                  label="Saldo Inicial"
-                  type="number"
-                  step="0.01"
-                  placeholder="0.00"
-                  value={formData.balance}
-                  onChange={(e) => setFormData({ ...formData, balance: e.target.value })}
-                />
+                {formData.type === 'credit' ? (
+                  <Input
+                    label="Limite do Cartão"
+                    type="number"
+                    step="0.01"
+                    placeholder="5000.00"
+                    value={formData.creditLimit}
+                    onChange={(e) => setFormData({ ...formData, creditLimit: e.target.value })}
+                    required
+                  />
+                ) : (
+                  <Input
+                    label="Saldo Inicial"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={formData.balance}
+                    onChange={(e) => setFormData({ ...formData, balance: e.target.value })}
+                  />
+                )}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Cor</label>

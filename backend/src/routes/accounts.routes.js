@@ -8,6 +8,7 @@ router.use(authMiddleware)
 
 // CRUD de contas
 router.get('/', accountsController.getAccounts)
+router.get('/simple', accountsController.getAccountsSimple) // Lista simplificada para selects
 router.post('/', accountsController.createAccount)
 router.put('/:id', accountsController.updateAccount)
 router.delete('/:id', accountsController.deleteAccount)
@@ -15,6 +16,7 @@ router.delete('/:id', accountsController.deleteAccount)
 // Ações especiais
 router.post('/transfer', accountsController.transferBetweenAccounts)
 router.get('/:id/transactions', accountsController.getAccountTransactions)
+router.post('/:id/balance', accountsController.updateAccountBalance) // Atualizar saldo
 
 module.exports = router
 

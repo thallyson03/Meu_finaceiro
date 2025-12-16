@@ -108,6 +108,8 @@ model Account {
   name        String   // "Nubank", "Itaú", "Poupança"
   type        String   // "checking", "savings", "credit", "investment"
   balance     Float    @default(0)
+  creditLimit Float?   // Limite do cartão (apenas para type="credit")
+  usedCredit  Float    @default(0) // Crédito utilizado (apenas para type="credit")
   color       String   @default("#3B82F6")
   icon        String   @default("bank")
   isActive    Boolean  @default(true)

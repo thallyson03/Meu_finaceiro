@@ -25,11 +25,29 @@ async function getAccounts(req, res) {
       }
     }))
 
-    // Resumo geral
+    // Resumo geral - patrimônio NÃO inclui cartões de crédito
+    const patrimonio = accountsWithBalance
+      .filter(a => a.type !== 'credit' && a.isActive)
+      .reduce((sum, a) => sum + a.calculatedBalance, 0)
+    
+    const totalCreditUsed = accountsWithBalance
+      .filter(a => a.type === 'credit')
+      .reduce((sum, a) => sum + (a.usedCredit || 0), 0)
+    
+    const totalCreditLimit = accountsWithBalance
+      .filter(a => a.type === 'credit')
+      .reduce((sum, a) => sum + (a.creditLimit || 0), 0)
+
     const summary = {
       totalAccounts: accounts.length,
       activeAccounts: accounts.filter(a => a.isActive).length,
-      totalBalance: accountsWithBalance.reduce((sum, a) => sum + a.calculatedBalance, 0),
+      patrimonio, // Apenas contas (sem cartões)
+      totalBalance: patrimonio, // Mantido para compatibilidade
+      creditCards: {
+        totalLimit: totalCreditLimit,
+        usedCredit: totalCreditUsed,
+        availableCredit: totalCreditLimit - totalCreditUsed
+      },
       byType: {
         checking: accountsWithBalance
           .filter(a => a.type === 'checking')
@@ -37,9 +55,7 @@ async function getAccounts(req, res) {
         savings: accountsWithBalance
           .filter(a => a.type === 'savings')
           .reduce((sum, a) => sum + a.calculatedBalance, 0),
-        credit: accountsWithBalance
-          .filter(a => a.type === 'credit')
-          .reduce((sum, a) => sum + a.calculatedBalance, 0),
+        credit: totalCreditUsed,
         investment: accountsWithBalance
           .filter(a => a.type === 'investment')
           .reduce((sum, a) => sum + a.calculatedBalance, 0)
@@ -56,7 +72,7 @@ async function getAccounts(req, res) {
 // Criar nova conta
 async function createAccount(req, res) {
   try {
-    const { name, type, balance, color, icon } = req.body
+    const { name, type, balance, creditLimit, color, icon } = req.body
 
     if (!name || !type) {
       return res.status(400).json({ error: 'Nome e tipo são obrigatórios' })
@@ -69,12 +85,21 @@ async function createAccount(req, res) {
       })
     }
 
+    // Se for cartão de crédito, exige limite
+    if (type === 'credit' && !creditLimit) {
+      return res.status(400).json({ 
+        error: 'Limite de crédito é obrigatório para cartões' 
+      })
+    }
+
     const account = await prisma.account.create({
       data: {
         userId: req.userId,
         name,
         type,
-        balance: parseFloat(balance || 0),
+        balance: type === 'credit' ? 0 : parseFloat(balance || 0),
+        creditLimit: type === 'credit' ? parseFloat(creditLimit) : null,
+        usedCredit: 0,
         color: color || getDefaultColor(type),
         icon: icon || getDefaultIcon(type)
       }
@@ -273,12 +298,104 @@ function getDefaultIcon(type) {
   return icons[type] || 'wallet'
 }
 
+// Atualizar saldo de uma conta (crédito ou débito)
+async function updateAccountBalance(req, res) {
+  try {
+    const { id } = req.params
+    const { amount, operation } = req.body // operation: 'credit' (adicionar) ou 'debit' (subtrair)
+
+    const account = await prisma.account.findFirst({
+      where: { id: parseInt(id), userId: req.userId }
+    })
+
+    if (!account) {
+      return res.status(404).json({ error: 'Conta não encontrada' })
+    }
+
+    const value = parseFloat(amount)
+    let newBalance = account.balance
+
+    if (account.type === 'credit') {
+      // Para cartão de crédito, atualizar crédito usado
+      let newUsedCredit = account.usedCredit || 0
+      
+      if (operation === 'debit') {
+        // Usar crédito (compra)
+        newUsedCredit += value
+        if (newUsedCredit > account.creditLimit) {
+          return res.status(400).json({ error: 'Limite de crédito excedido' })
+        }
+      } else {
+        // Pagar fatura (reduzir crédito usado)
+        newUsedCredit = Math.max(0, newUsedCredit - value)
+      }
+
+      const updated = await prisma.account.update({
+        where: { id: parseInt(id) },
+        data: { usedCredit: newUsedCredit }
+      })
+
+      return res.json(updated)
+    } else {
+      // Para outras contas, atualizar saldo
+      if (operation === 'credit') {
+        newBalance += value
+      } else {
+        newBalance -= value
+      }
+
+      const updated = await prisma.account.update({
+        where: { id: parseInt(id) },
+        data: { balance: newBalance }
+      })
+
+      return res.json(updated)
+    }
+  } catch (error) {
+    console.error('Erro ao atualizar saldo:', error)
+    res.status(500).json({ error: 'Erro ao atualizar saldo' })
+  }
+}
+
+// Obter lista simplificada de contas (para selects)
+async function getAccountsSimple(req, res) {
+  try {
+    const accounts = await prisma.account.findMany({
+      where: { userId: req.userId, isActive: true },
+      select: {
+        id: true,
+        name: true,
+        type: true,
+        balance: true,
+        creditLimit: true,
+        usedCredit: true,
+        color: true
+      },
+      orderBy: { name: 'asc' }
+    })
+
+    // Separar contas de cartões
+    const regularAccounts = accounts.filter(a => a.type !== 'credit')
+    const creditCards = accounts.filter(a => a.type === 'credit').map(c => ({
+      ...c,
+      availableCredit: (c.creditLimit || 0) - (c.usedCredit || 0)
+    }))
+
+    res.json({ accounts: regularAccounts, creditCards })
+  } catch (error) {
+    console.error('Erro ao buscar contas:', error)
+    res.status(500).json({ error: 'Erro ao buscar contas' })
+  }
+}
+
 module.exports = {
   getAccounts,
   createAccount,
   updateAccount,
   deleteAccount,
   transferBetweenAccounts,
-  getAccountTransactions
+  getAccountTransactions,
+  updateAccountBalance,
+  getAccountsSimple
 }
 

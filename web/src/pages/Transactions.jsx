@@ -11,6 +11,8 @@ import { FiPlus, FiUpload, FiX, FiDollarSign, FiTag, FiCalendar, FiCreditCard, F
 export default function Transactions(){
   const [txs, setTxs] = useState([])
   const [allTxs, setAllTxs] = useState([]) // Todas transações para não perder dados ao filtrar
+  const [accounts, setAccounts] = useState([])
+  const [creditCards, setCreditCards] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [showUpload, setShowUpload] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -84,8 +86,19 @@ export default function Transactions(){
       .catch(console.error)
   }
 
+  const loadAccounts = () => {
+    if(!token) return
+    api.get('/accounts/simple', { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => {
+        setAccounts(r.data.accounts || [])
+        setCreditCards(r.data.creditCards || [])
+      })
+      .catch(console.error)
+  }
+
   useEffect(()=>{
     loadTransactions()
+    loadAccounts()
   }, [selectedMonth, selectedYear])
 
   const handleSubmit = async (e) => {
@@ -130,8 +143,35 @@ export default function Transactions(){
         headers: { Authorization: `Bearer ${token}` }
       })
       loadTransactions()
+      loadAccounts() // Atualizar saldos
     } catch (err) {
       alert('Erro ao excluir transação')
+      console.error(err)
+    }
+  }
+
+  const handlePay = async (id, accountId) => {
+    try {
+      await api.post(`/transactions/${id}/pay`, { accountId }, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      loadTransactions()
+      loadAccounts() // Atualizar saldos
+    } catch (err) {
+      alert(err.response?.data?.error || 'Erro ao pagar transação')
+      console.error(err)
+    }
+  }
+
+  const handleReceive = async (id, accountId) => {
+    try {
+      await api.post(`/transactions/${id}/receive`, { accountId }, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      loadTransactions()
+      loadAccounts() // Atualizar saldos
+    } catch (err) {
+      alert(err.response?.data?.error || 'Erro ao receber receita')
       console.error(err)
     }
   }
@@ -419,7 +459,14 @@ export default function Transactions(){
       {/* Transactions List */}
       <Card>
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Todas as Transações</h3>
-        <TransactionTable txs={txs} onDelete={handleDelete} />
+        <TransactionTable 
+          txs={txs} 
+          onDelete={handleDelete}
+          onPay={handlePay}
+          onReceive={handleReceive}
+          accounts={accounts}
+          creditCards={creditCards}
+        />
       </Card>
     </div>
   )

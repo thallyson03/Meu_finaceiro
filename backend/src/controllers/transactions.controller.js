@@ -95,10 +95,155 @@ exports.delete = async (req, res, next) => {
       return res.status(404).json({ error: 'Transação não encontrada' });
     }
     
+    // Se a transação estava paga e tinha conta associada, reverter o saldo
+    if (transaction.isPaid && transaction.accountId) {
+      const account = await prisma.account.findUnique({
+        where: { id: transaction.accountId }
+      });
+      
+      if (account) {
+        if (account.type === 'credit') {
+          // Reverter uso do crédito
+          const amount = Math.abs(transaction.amount);
+          await prisma.account.update({
+            where: { id: account.id },
+            data: { usedCredit: Math.max(0, (account.usedCredit || 0) - amount) }
+          });
+        } else {
+          // Reverter saldo
+          const amount = transaction.type === 'income' 
+            ? -Math.abs(transaction.amount) 
+            : Math.abs(transaction.amount);
+          await prisma.account.update({
+            where: { id: account.id },
+            data: { balance: account.balance + amount }
+          });
+        }
+      }
+    }
+    
     await prisma.transaction.delete({
       where: { id: parseInt(id) }
     });
     
     res.json({ message: 'Transação excluída com sucesso' });
+  } catch (err) { next(err); }
+};
+
+// Pagar uma transação (marcar como paga e debitar da conta)
+exports.pay = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { accountId } = req.body;
+    
+    const transaction = await prisma.transaction.findFirst({
+      where: { id: parseInt(id), userId: req.userId }
+    });
+    
+    if (!transaction) {
+      return res.status(404).json({ error: 'Transação não encontrada' });
+    }
+    
+    if (transaction.isPaid) {
+      return res.status(400).json({ error: 'Transação já está paga' });
+    }
+    
+    // Se informou conta, atualizar saldo
+    if (accountId) {
+      const account = await prisma.account.findFirst({
+        where: { id: parseInt(accountId), userId: req.userId }
+      });
+      
+      if (!account) {
+        return res.status(404).json({ error: 'Conta não encontrada' });
+      }
+      
+      const amount = Math.abs(transaction.amount);
+      
+      if (account.type === 'credit') {
+        // Usar crédito do cartão
+        const newUsedCredit = (account.usedCredit || 0) + amount;
+        if (newUsedCredit > account.creditLimit) {
+          return res.status(400).json({ error: 'Limite de crédito excedido' });
+        }
+        await prisma.account.update({
+          where: { id: account.id },
+          data: { usedCredit: newUsedCredit }
+        });
+      } else {
+        // Debitar da conta (despesa) ou creditar (receita)
+        const newBalance = transaction.type === 'expense'
+          ? account.balance - amount
+          : account.balance + amount;
+        
+        await prisma.account.update({
+          where: { id: account.id },
+          data: { balance: newBalance }
+        });
+      }
+    }
+    
+    // Marcar como paga
+    const updated = await prisma.transaction.update({
+      where: { id: parseInt(id) },
+      data: { 
+        isPaid: true,
+        accountId: accountId ? parseInt(accountId) : transaction.accountId
+      }
+    });
+    
+    res.json({ message: 'Transação paga com sucesso', transaction: updated });
+  } catch (err) { next(err); }
+};
+
+// Receber receita (marcar como recebida e creditar na conta)
+exports.receive = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { accountId } = req.body;
+    
+    const transaction = await prisma.transaction.findFirst({
+      where: { id: parseInt(id), userId: req.userId, type: 'income' }
+    });
+    
+    if (!transaction) {
+      return res.status(404).json({ error: 'Receita não encontrada' });
+    }
+    
+    if (transaction.isPaid) {
+      return res.status(400).json({ error: 'Receita já foi recebida' });
+    }
+    
+    // Se informou conta, creditar o valor
+    if (accountId) {
+      const account = await prisma.account.findFirst({
+        where: { id: parseInt(accountId), userId: req.userId }
+      });
+      
+      if (!account) {
+        return res.status(404).json({ error: 'Conta não encontrada' });
+      }
+      
+      if (account.type === 'credit') {
+        return res.status(400).json({ error: 'Não é possível receber em cartão de crédito' });
+      }
+      
+      const amount = Math.abs(transaction.amount);
+      await prisma.account.update({
+        where: { id: account.id },
+        data: { balance: account.balance + amount }
+      });
+    }
+    
+    // Marcar como recebida
+    const updated = await prisma.transaction.update({
+      where: { id: parseInt(id) },
+      data: { 
+        isPaid: true,
+        accountId: accountId ? parseInt(accountId) : transaction.accountId
+      }
+    });
+    
+    res.json({ message: 'Receita recebida com sucesso', transaction: updated });
   } catch (err) { next(err); }
 };
