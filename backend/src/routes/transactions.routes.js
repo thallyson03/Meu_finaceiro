@@ -7,5 +7,6 @@ router.use(auth);
 router.get('/', transactionsController.list);
 router.post('/', transactionsController.create);
 router.get('/summary', transactionsController.summary);
+router.delete('/:id', transactionsController.delete);
 
 module.exports = router;

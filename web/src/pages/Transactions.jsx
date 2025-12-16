@@ -103,6 +103,18 @@ export default function Transactions(){
     }
   }
 
+  const handleDelete = async (id) => {
+    try {
+      await api.delete(`/transactions/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      loadTransactions()
+    } catch (err) {
+      alert('Erro ao excluir transação')
+      console.error(err)
+    }
+  }
+
   const expenseCategories = ['Alimentação', 'Transporte', 'Moradia', 'Saúde', 'Educação', 'Lazer', 'Compras', 'Outros']
   const incomeCategories = ['Salário', 'Freelance', 'Investimentos', 'Vendas', 'Bônus', 'Outros']
   
@@ -111,32 +123,32 @@ export default function Transactions(){
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Transações</h1>
-          <p className="text-gray-600 mt-1">Gerencie suas transações financeiras</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Transações</h1>
+          <p className="text-gray-600 mt-1 text-sm">Gerencie suas transações financeiras</p>
         </div>
-        <div className="flex gap-3">
-          <Button
-            variant="outline"
+        <div className="flex gap-2">
+          <button
             onClick={() => {
               setShowUpload(!showUpload)
               setShowForm(false)
             }}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
           >
-            <FiUpload size={18} />
-            Upload Fatura
-          </Button>
-          <Button
-            variant="primary"
+            <FiUpload size={14} />
+            <span className="hidden sm:inline">Upload</span>
+          </button>
+          <button
             onClick={() => {
               setShowForm(!showForm)
               setShowUpload(false)
             }}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors"
           >
-            <FiPlus size={18} />
-            Nova Transação
-          </Button>
+            <FiPlus size={14} />
+            <span className="hidden sm:inline">Nova</span>
+          </button>
         </div>
       </div>
 
@@ -374,7 +386,7 @@ export default function Transactions(){
       {/* Transactions List */}
       <Card>
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Todas as Transações</h3>
-        <TransactionTable txs={txs} />
+        <TransactionTable txs={txs} onDelete={handleDelete} />
       </Card>
     </div>
   )

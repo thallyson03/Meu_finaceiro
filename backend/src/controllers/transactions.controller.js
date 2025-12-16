@@ -52,3 +52,24 @@ exports.summary = async (req, res, next) => {
     });
   } catch (err) { next(err); }
 };
+
+exports.delete = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    
+    // Verificar se a transação pertence ao usuário
+    const transaction = await prisma.transaction.findFirst({
+      where: { id: parseInt(id), userId: req.userId }
+    });
+    
+    if (!transaction) {
+      return res.status(404).json({ error: 'Transação não encontrada' });
+    }
+    
+    await prisma.transaction.delete({
+      where: { id: parseInt(id) }
+    });
+    
+    res.json({ message: 'Transação excluída com sucesso' });
+  } catch (err) { next(err); }
+};

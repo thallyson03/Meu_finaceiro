@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import { FiDollarSign, FiSearch, FiFilter } from 'react-icons/fi'
+import { FiDollarSign, FiSearch, FiFilter, FiTrash2 } from 'react-icons/fi'
 
-export default function TransactionTable({ txs }){
+export default function TransactionTable({ txs, onDelete }){
   const [search, setSearch] = useState('')
   const [filterCategory, setFilterCategory] = useState('all')
   
@@ -64,8 +64,10 @@ export default function TransactionTable({ txs }){
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descrição</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoria</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cartão</th>
               <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Valor</th>
+              <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -85,11 +87,37 @@ export default function TransactionTable({ txs }){
                     {t.category}
                   </span>
                 </td>
+                <td className="px-4 py-4 whitespace-nowrap">
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                    t.type === 'income' 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    {t.type === 'income' ? 'Receita' : 'Despesa'}
+                  </span>
+                </td>
                 <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
                   {t.card || '-'}
                 </td>
-                <td className="px-4 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
-                  R$ {Math.abs(Number(t.amount)).toFixed(2)}
+                <td className={`px-4 py-4 whitespace-nowrap text-sm text-right font-semibold ${
+                  t.type === 'income' ? 'text-green-600' : 'text-red-600'
+                }`}>
+                  {t.type === 'income' ? '+' : '-'} R$ {Math.abs(Number(t.amount)).toFixed(2)}
+                </td>
+                <td className="px-4 py-4 whitespace-nowrap text-center">
+                  {onDelete && (
+                    <button
+                      onClick={() => {
+                        if (window.confirm('Tem certeza que deseja excluir esta transação?')) {
+                          onDelete(t.id)
+                        }
+                      }}
+                      className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Excluir transação"
+                    >
+                      <FiTrash2 size={16} />
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
@@ -109,20 +137,40 @@ export default function TransactionTable({ txs }){
                 </p>
               </div>
               <div className="text-right">
-                <p className="font-semibold text-gray-900">
-                  R$ {Math.abs(Number(t.amount)).toFixed(2)}
+                <p className={`font-semibold ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                  {t.type === 'income' ? '+' : '-'} R$ {Math.abs(Number(t.amount)).toFixed(2)}
                 </p>
                 {t.installments && (
                   <p className="text-xs text-gray-500">{t.installments}x</p>
                 )}
               </div>
             </div>
-            <div className="flex items-center gap-2 mt-3">
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                {t.category}
-              </span>
-              {t.card && (
-                <span className="text-xs text-gray-600">{t.card}</span>
+            <div className="flex items-center justify-between mt-3">
+              <div className="flex items-center gap-2">
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                  t.type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                }`}>
+                  {t.type === 'income' ? 'Receita' : 'Despesa'}
+                </span>
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {t.category}
+                </span>
+                {t.card && (
+                  <span className="text-xs text-gray-600">{t.card}</span>
+                )}
+              </div>
+              {onDelete && (
+                <button
+                  onClick={() => {
+                    if (window.confirm('Tem certeza que deseja excluir esta transação?')) {
+                      onDelete(t.id)
+                    }
+                  }}
+                  className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  title="Excluir"
+                >
+                  <FiTrash2 size={18} />
+                </button>
               )}
             </div>
           </div>
