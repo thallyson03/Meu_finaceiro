@@ -134,20 +134,20 @@ export default function Transactions(){
               setShowUpload(!showUpload)
               setShowForm(false)
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
           >
-            <FiUpload size={14} />
-            <span className="hidden sm:inline">Upload</span>
+            <FiUpload size={16} />
+            Upload
           </button>
           <button
             onClick={() => {
               setShowForm(!showForm)
               setShowUpload(false)
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors"
           >
-            <FiPlus size={14} />
-            <span className="hidden sm:inline">Nova</span>
+            <FiPlus size={16} />
+            Nova Transação
           </button>
         </div>
       </div>
