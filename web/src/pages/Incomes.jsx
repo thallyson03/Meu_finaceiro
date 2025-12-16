@@ -4,10 +4,21 @@ import api from '../api/api'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import Input from '../components/Input'
+import MonthSelector, { useMonthSelector } from '../components/MonthSelector'
 import { FiPlus, FiX, FiDollarSign, FiCalendar, FiTrendingUp, FiTrash2 } from 'react-icons/fi'
 
 export default function Incomes(){
   const [incomes, setIncomes] = useState([])
+  
+  // Hook para seletor de mês
+  const {
+    selectedMonth,
+    selectedYear,
+    goToPreviousMonth,
+    goToNextMonth,
+    goToCurrentMonth,
+    monthName
+  } = useMonthSelector()
   const [showForm, setShowForm] = useState(false)
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
@@ -29,7 +40,11 @@ export default function Incomes(){
     }
     api.get('/transactions', { headers: { Authorization: `Bearer ${token}` } })
       .then(r => {
-        const incomeTransactions = r.data.filter(t => t.type === 'income')
+        const incomeTransactions = r.data.filter(t => {
+          if (t.type !== 'income') return false
+          const txDate = new Date(t.date)
+          return txDate.getMonth() + 1 === selectedMonth && txDate.getFullYear() === selectedYear
+        })
         setIncomes(incomeTransactions)
       })
       .catch(console.error)
@@ -37,7 +52,7 @@ export default function Incomes(){
   
   useEffect(()=>{
     loadIncomes()
-  }, [])
+  }, [selectedMonth, selectedYear])
   
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -88,18 +103,30 @@ export default function Incomes(){
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Receitas</h1>
-          <p className="text-gray-600 mt-1">Registre suas fontes de renda</p>
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Receitas</h1>
+            <p className="text-gray-600 mt-1 text-sm">Registre suas fontes de renda</p>
+          </div>
+          <Button
+            variant="primary"
+            onClick={() => setShowForm(!showForm)}
+          >
+            <FiPlus size={18} />
+            Nova Receita
+          </Button>
         </div>
-        <Button
-          variant="primary"
-          onClick={() => setShowForm(!showForm)}
-        >
-          <FiPlus size={18} />
-          Nova Receita
-        </Button>
+        
+        {/* Seletor de Mês */}
+        <MonthSelector
+          selectedMonth={selectedMonth}
+          selectedYear={selectedYear}
+          onPreviousMonth={goToPreviousMonth}
+          onNextMonth={goToNextMonth}
+          onGoToCurrentMonth={goToCurrentMonth}
+          variant="compact"
+        />
       </div>
       
       {/* Total */}
@@ -248,3 +275,4 @@ export default function Incomes(){
     </div>
   )
 }
+

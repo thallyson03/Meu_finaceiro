@@ -5,10 +5,12 @@ import InvoiceUploader from '../components/InvoiceUploader'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import Input from '../components/Input'
+import MonthSelector, { useMonthSelector } from '../components/MonthSelector'
 import { FiPlus, FiUpload, FiX, FiDollarSign, FiTag, FiCalendar, FiCreditCard, FiTrendingUp, FiTrendingDown, FiHash } from 'react-icons/fi'
 
 export default function Transactions(){
   const [txs, setTxs] = useState([])
+  const [allTxs, setAllTxs] = useState([]) // Todas transações para não perder dados ao filtrar
   const [showForm, setShowForm] = useState(false)
   const [showUpload, setShowUpload] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -55,17 +57,36 @@ export default function Transactions(){
   }, [formData.amount, formData.installments, formData.installmentMode])
   
   const token = localStorage.getItem('token')
+  
+  // Hook para seletor de mês
+  const {
+    selectedMonth,
+    selectedYear,
+    goToPreviousMonth,
+    goToNextMonth,
+    goToCurrentMonth,
+    isCurrentMonth,
+    monthName
+  } = useMonthSelector()
 
   const loadTransactions = () => {
     if(!token) return
     api.get('/transactions', { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => setTxs(r.data))
+      .then(r => {
+        setAllTxs(r.data)
+        // Filtrar por mês selecionado
+        const filtered = r.data.filter(tx => {
+          const txDate = new Date(tx.date)
+          return txDate.getMonth() + 1 === selectedMonth && txDate.getFullYear() === selectedYear
+        })
+        setTxs(filtered)
+      })
       .catch(console.error)
   }
 
   useEffect(()=>{
     loadTransactions()
-  }, [])
+  }, [selectedMonth, selectedYear])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -123,33 +144,45 @@ export default function Transactions(){
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Transações</h1>
-          <p className="text-gray-600 mt-1 text-sm">Gerencie suas transações financeiras</p>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Transações</h1>
+            <p className="text-gray-600 mt-1 text-sm">Gerencie suas transações financeiras</p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                setShowUpload(!showUpload)
+                setShowForm(false)
+              }}
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <FiUpload size={16} />
+              Upload
+            </button>
+            <button
+              onClick={() => {
+                setShowForm(!showForm)
+                setShowUpload(false)
+              }}
+              className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-emerald-500 rounded-lg hover:bg-emerald-600 transition-colors shadow-sm"
+            >
+              <FiPlus size={16} />
+              Nova Transação
+            </button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => {
-              setShowUpload(!showUpload)
-              setShowForm(false)
-            }}
-            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <FiUpload size={16} />
-            Upload
-          </button>
-          <button
-            onClick={() => {
-              setShowForm(!showForm)
-              setShowUpload(false)
-            }}
-            className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-emerald-500 rounded-lg hover:bg-emerald-600 transition-colors shadow-sm"
-          >
-            <FiPlus size={16} />
-            Nova Transação
-          </button>
-        </div>
+        
+        {/* Seletor de Mês */}
+        <MonthSelector
+          selectedMonth={selectedMonth}
+          selectedYear={selectedYear}
+          onPreviousMonth={goToPreviousMonth}
+          onNextMonth={goToNextMonth}
+          onGoToCurrentMonth={goToCurrentMonth}
+          variant="compact"
+        />
       </div>
 
       {/* Upload Section */}

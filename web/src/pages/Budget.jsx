@@ -3,6 +3,7 @@ import api from '../api/api'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import Input from '../components/Input'
+import MonthSelector, { useMonthSelector } from '../components/MonthSelector'
 import { FiDollarSign, FiTrendingUp, FiTrendingDown, FiAlertCircle, FiCheckCircle, FiPlus, FiTrash2 } from 'react-icons/fi'
 
 export default function Budget(){
@@ -15,13 +16,23 @@ export default function Budget(){
   })
   const token = localStorage.getItem('token')
   
+  // Hook para seletor de mês
+  const {
+    selectedMonth,
+    selectedYear,
+    goToPreviousMonth,
+    goToNextMonth,
+    goToCurrentMonth,
+    monthName
+  } = useMonthSelector()
+  
   const categories = ['Alimentação', 'Transporte', 'Moradia', 'Saúde', 'Educação', 'Lazer', 'Compras', 'Outros']
   
   const loadData = () => {
     const headers = { headers: { Authorization: `Bearer ${token}` } }
     Promise.all([
-      api.get('/budget/current', headers),
-      api.get('/budget/summary', headers)
+      api.get(`/budget/current?month=${selectedMonth}&year=${selectedYear}`, headers),
+      api.get(`/budget/summary?month=${selectedMonth}&year=${selectedYear}`, headers)
     ]).then(([budgetRes, summaryRes]) => {
       setBudgets(budgetRes.data)
       setSummary(summaryRes.data)
@@ -30,15 +41,14 @@ export default function Budget(){
   
   useEffect(()=>{
     loadData()
-  }, [])
+  }, [selectedMonth, selectedYear])
   
   const handleSubmit = async (e) => {
     e.preventDefault()
-    const now = new Date()
     await api.post('/budget', {
       ...formData,
-      month: now.getMonth() + 1,
-      year: now.getFullYear()
+      month: selectedMonth,
+      year: selectedYear
     }, { headers: { Authorization: `Bearer ${token}` } })
     
     setFormData({ category: '', limit: '' })
@@ -57,15 +67,27 @@ export default function Budget(){
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Orçamento Mensal</h1>
-          <p className="text-gray-600 mt-1">Defina limites e acompanhe seus gastos</p>
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Orçamento Mensal</h1>
+            <p className="text-gray-600 mt-1 text-sm">Defina limites e acompanhe seus gastos</p>
+          </div>
+          <Button variant="primary" onClick={() => setShowForm(!showForm)}>
+            <FiPlus size={18} />
+            Novo Limite
+          </Button>
         </div>
-        <Button variant="primary" onClick={() => setShowForm(!showForm)}>
-          <FiPlus size={18} />
-          Novo Limite
-        </Button>
+        
+        {/* Seletor de Mês */}
+        <MonthSelector
+          selectedMonth={selectedMonth}
+          selectedYear={selectedYear}
+          onPreviousMonth={goToPreviousMonth}
+          onNextMonth={goToNextMonth}
+          onGoToCurrentMonth={goToCurrentMonth}
+          variant="compact"
+        />
       </div>
       
       {/* Resumo Financeiro */}

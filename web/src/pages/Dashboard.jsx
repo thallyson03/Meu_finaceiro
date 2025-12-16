@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import api from '../api/api'
 import StatCard from '../components/StatCard'
 import Card from '../components/Card'
+import MonthSelector, { useMonthSelector, MONTH_NAMES } from '../components/MonthSelector'
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts'
 import { FiDollarSign, FiTrendingUp, FiTrendingDown, FiTarget, FiCheckCircle, FiAlertCircle, FiCreditCard, FiCalendar, FiClock, FiBarChart2, FiArrowRight } from 'react-icons/fi'
 
@@ -11,15 +12,28 @@ export default function Dashboard(){
   const [installmentsData, setInstallmentsData] = useState(null)
   const [monthlyBalance, setMonthlyBalance] = useState(null)
   const [loading, setLoading] = useState(true)
+  
+  // Hook para seletor de mês
+  const {
+    selectedMonth,
+    selectedYear,
+    goToPreviousMonth,
+    goToNextMonth,
+    goToCurrentMonth,
+    isCurrentMonth,
+    monthName
+  } = useMonthSelector()
+  
   const token = localStorage.getItem('token')
   const navigate = useNavigate()
 
-  useEffect(()=>{
+  const loadData = () => {
     if(!token) return
+    setLoading(true)
     
     Promise.all([
-      api.get('/transactions/summary', { headers: { Authorization: `Bearer ${token}` } }),
-      api.get('/budget/summary', { headers: { Authorization: `Bearer ${token}` } }),
+      api.get(`/transactions/summary?month=${selectedMonth}&year=${selectedYear}`, { headers: { Authorization: `Bearer ${token}` } }),
+      api.get(`/budget/summary?month=${selectedMonth}&year=${selectedYear}`, { headers: { Authorization: `Bearer ${token}` } }),
       api.get('/installments', { headers: { Authorization: `Bearer ${token}` } }),
       api.get('/installments/monthly-balance', { headers: { Authorization: `Bearer ${token}` } }),
       api.get('/installments/future-projection', { headers: { Authorization: `Bearer ${token}` } })
@@ -40,7 +54,11 @@ export default function Dashboard(){
         console.error(err)
         setLoading(false)
       })
-  }, [])
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [selectedMonth, selectedYear])
 
   if (loading) {
     return (
@@ -99,10 +117,35 @@ export default function Dashboard(){
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-[#2D3436]">Dashboard</h1>
-        <p className="text-gray-500 mt-1">Visão completa das suas finanças</p>
+      {/* Header com Seletor de Mês */}
+      <div className="flex flex-col gap-4">
+        {/* Título */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#2D3436]">Dashboard</h1>
+            <p className="text-gray-500 mt-1 text-sm sm:text-base">Visão completa das suas finanças</p>
+          </div>
+          
+          {/* Botão Hoje - aparece apenas quando não é o mês atual */}
+          {!isCurrentMonth && (
+            <button
+              onClick={goToCurrentMonth}
+              className="px-4 py-2 text-sm font-medium text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors border border-emerald-200"
+            >
+              Voltar para Hoje
+            </button>
+          )}
+        </div>
+        
+        {/* Seletor de Mês - Design Hero */}
+        <MonthSelector
+          selectedMonth={selectedMonth}
+          selectedYear={selectedYear}
+          onPreviousMonth={goToPreviousMonth}
+          onNextMonth={goToNextMonth}
+          onGoToCurrentMonth={goToCurrentMonth}
+          variant="hero"
+        />
       </div>
 
       {/* Main Stats - 6 cards em grid de 3 no mobile */}
@@ -112,14 +155,14 @@ export default function Dashboard(){
           value={`R$ ${totalIncome.toFixed(2)}`}
           icon={FiTrendingUp}
           color="green"
-          trendValue="Mês atual"
+          trendValue={isCurrentMonth ? "Mês atual" : MONTH_NAMES[selectedMonth - 1]}
         />
         <StatCard
           title="Despesas"
           value={`R$ ${totalExpense.toFixed(2)}`}
           icon={FiTrendingDown}
           color="red"
-          trendValue="Mês atual"
+          trendValue={isCurrentMonth ? "Mês atual" : MONTH_NAMES[selectedMonth - 1]}
         />
         <StatCard
           title="Saldo"
@@ -272,7 +315,7 @@ export default function Dashboard(){
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Receitas vs Despesas */}
         <Card>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Mês Atual</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">{MONTH_NAMES[selectedMonth - 1]} {selectedYear}</h3>
           {comparisonData.some(d => d.value > 0) ? (
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={comparisonData} layout="vertical">

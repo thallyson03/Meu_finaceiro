@@ -1,11 +1,12 @@
 const prisma = require('../lib/prismaClient');
 
-// Obter orçamentos do mês atual
+// Obter orçamentos do mês (aceita query params)
 exports.getCurrentMonth = async (req, res, next) => {
   try {
+    const { month: queryMonth, year: queryYear } = req.query;
     const now = new Date();
-    const month = now.getMonth() + 1;
-    const year = now.getFullYear();
+    const month = queryMonth ? parseInt(queryMonth) : now.getMonth() + 1;
+    const year = queryYear ? parseInt(queryYear) : now.getFullYear();
     
     const budgets = await prisma.budget.findMany({
       where: {
@@ -62,11 +63,12 @@ exports.delete = async (req, res, next) => {
 // Obter resumo financeiro completo
 exports.getFinancialSummary = async (req, res, next) => {
   try {
+    const { month: queryMonth, year: queryYear } = req.query;
     const now = new Date();
-    const month = now.getMonth() + 1;
-    const year = now.getFullYear();
+    const month = queryMonth ? parseInt(queryMonth) : now.getMonth() + 1;
+    const year = queryYear ? parseInt(queryYear) : now.getFullYear();
     
-    // Buscar todas as transações do mês atual
+    // Buscar todas as transações do mês selecionado
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0, 23, 59, 59);
     

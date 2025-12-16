@@ -29,8 +29,31 @@ exports.create = async (req, res, next) => {
 
 exports.summary = async (req, res, next) => {
   try {
-    const since = new Date(); since.setMonth(since.getMonth() - 6);
-    const txs = await prisma.transaction.findMany({ where: { userId: req.userId, date: { gte: since } }, orderBy: { date: 'asc' } });
+    const { month, year } = req.query;
+    
+    let startDate, endDate;
+    
+    if (month && year) {
+      // Filtrar por mês específico
+      startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+      endDate = new Date(parseInt(year), parseInt(month), 0, 23, 59, 59);
+    } else {
+      // Mês atual por padrão
+      const now = new Date();
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+    }
+    
+    const txs = await prisma.transaction.findMany({ 
+      where: { 
+        userId: req.userId, 
+        date: { 
+          gte: startDate,
+          lte: endDate
+        } 
+      }, 
+      orderBy: { date: 'asc' } 
+    });
 
     const byCategory = {};
     const incomes = txs.filter(t => t.type === 'income');
@@ -48,7 +71,13 @@ exports.summary = async (req, res, next) => {
       total: totalExpense,
       totalIncome,
       totalExpense,
-      balance: totalIncome - totalExpense
+      balance: totalIncome - totalExpense,
+      period: {
+        month: startDate.getMonth() + 1,
+        year: startDate.getFullYear(),
+        startDate,
+        endDate
+      }
     });
   } catch (err) { next(err); }
 };
