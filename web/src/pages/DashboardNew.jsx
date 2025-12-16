@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import api from '../api/api'
 import StatCard from '../components/StatCard'
 import Card from '../components/Card'
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts'
 import { FiDollarSign, FiTrendingUp, FiTrendingDown, FiTarget, FiCreditCard, FiCheckCircle, FiAlertCircle } from 'react-icons/fi'
 
 export default function Dashboard(){
@@ -66,7 +66,8 @@ export default function Dashboard(){
   })
 
   const pieData = Object.entries(categoryData).map(([name, value]) => ({ name, value }))
-  const COLORS = ['#3B82F6', '#8B5CF6', '#EC4899', '#10B981', '#F59E0B', '#EF4444']
+  // Paleta suave e delicada
+  const COLORS = ['#93C5FD', '#C4B5FD', '#F9A8D4', '#86EFAC', '#FDE68A', '#FECACA', '#A5F3FC', '#FED7AA']
 
   // Comparativo mensal
   const comparisonData = [
@@ -140,15 +141,14 @@ export default function Dashboard(){
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Receitas vs Despesas</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={comparisonData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
+              <XAxis dataKey="name" axisLine={false} tickLine={false} />
+              <YAxis axisLine={false} tickLine={false} />
               <Tooltip formatter={(value) => `R$ ${value.toFixed(2)}`} />
               <Bar dataKey="value" radius={[8, 8, 0, 0]}>
                 {comparisonData.map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`} 
-                    fill={index === 0 ? '#10B981' : index === 1 ? '#EF4444' : balance >= 0 ? '#3B82F6' : '#F59E0B'} 
+                    fill={index === 0 ? '#86EFAC' : index === 1 ? '#FECACA' : balance >= 0 ? '#93C5FD' : '#FED7AA'} 
                   />
                 ))}
               </Bar>

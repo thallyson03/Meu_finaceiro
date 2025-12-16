@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import api from '../api/api'
 import TransactionTable from '../components/TransactionTable'
 import InvoiceUploader from '../components/InvoiceUploader'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import Input from '../components/Input'
-import { FiPlus, FiUpload, FiX, FiDollarSign, FiTag, FiCalendar, FiCreditCard, FiTrendingUp, FiTrendingDown } from 'react-icons/fi'
+import { FiPlus, FiUpload, FiX, FiDollarSign, FiTag, FiCalendar, FiCreditCard, FiTrendingUp, FiTrendingDown, FiHash } from 'react-icons/fi'
 
 export default function Transactions(){
   const [txs, setTxs] = useState([])
@@ -20,8 +20,39 @@ export default function Transactions(){
     date: new Date().toISOString().split('T')[0],
     card: '',
     installments: '',
-    isPaid: true
+    isPaid: true,
+    installmentMode: 'total' // 'total' = valor total dividido | 'perInstallment' = valor por parcela
   })
+
+  // Calcula os valores baseado no modo de parcelas
+  const calculatedValues = useMemo(() => {
+    const amount = parseFloat(formData.amount) || 0
+    const installments = parseInt(formData.installments) || 1
+    
+    if (formData.installmentMode === 'perInstallment' && formData.installments) {
+      // Modo: valor por parcela - calcular o total
+      const totalAmount = amount * installments
+      return {
+        totalAmount: totalAmount,
+        installmentValue: amount,
+        showCalculation: true
+      }
+    } else if (formData.installmentMode === 'total' && formData.installments) {
+      // Modo: valor total - calcular valor de cada parcela
+      const installmentValue = amount / installments
+      return {
+        totalAmount: amount,
+        installmentValue: installmentValue,
+        showCalculation: true
+      }
+    }
+    
+    return {
+      totalAmount: amount,
+      installmentValue: amount,
+      showCalculation: false
+    }
+  }, [formData.amount, formData.installments, formData.installmentMode])
   
   const token = localStorage.getItem('token')
 
@@ -41,9 +72,12 @@ export default function Transactions(){
     setLoading(true)
     
     try {
+      // Determina o valor total baseado no modo de parcelas
+      const finalAmount = calculatedValues.totalAmount
+      
       await api.post('/transactions', {
         ...formData,
-        amount: parseFloat(formData.amount),
+        amount: finalAmount,
         installments: formData.installments ? parseInt(formData.installments) : null
       }, { 
         headers: { Authorization: `Bearer ${token}` } 
@@ -57,7 +91,8 @@ export default function Transactions(){
         date: new Date().toISOString().split('T')[0],
         card: '',
         installments: '',
-        isPaid: true
+        isPaid: true,
+        installmentMode: 'total'
       })
       setShowForm(false)
       loadTransactions()
@@ -202,7 +237,10 @@ export default function Transactions(){
               </div>
               
               <Input
-                label="Valor"
+                label={formData.installments && parseInt(formData.installments) > 1 && formData.installmentMode === 'perInstallment' 
+                  ? "Valor da Parcela" 
+                  : "Valor"
+                }
                 type="number"
                 step="0.01"
                 value={formData.amount}
@@ -236,8 +274,82 @@ export default function Transactions(){
                 onChange={(e) => setFormData({...formData, installments: e.target.value})}
                 placeholder="1"
                 min="1"
+                icon={FiHash}
               />
             </div>
+            
+            {/* Modo de Parcelas - aparece quando há parcelas */}
+            {formData.installments && parseInt(formData.installments) > 1 && (
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg space-y-4">
+                <div className="flex items-center gap-2 text-blue-700">
+                  <FiCreditCard size={20} />
+                  <span className="font-medium">Configuração de Parcelas</span>
+                </div>
+                
+                {/* Toggle de Modo */}
+                <div className="flex gap-3">
+                  <label className="flex-1">
+                    <input
+                      type="radio"
+                      name="installmentMode"
+                      value="total"
+                      checked={formData.installmentMode === 'total'}
+                      onChange={(e) => setFormData({...formData, installmentMode: e.target.value})}
+                      className="sr-only peer"
+                    />
+                    <div className="flex items-center justify-center gap-2 p-3 border-2 border-gray-300 rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-100 peer-checked:text-blue-700 transition-all text-sm">
+                      <FiDollarSign size={18} />
+                      <span className="font-medium">Valor Total</span>
+                    </div>
+                  </label>
+                  
+                  <label className="flex-1">
+                    <input
+                      type="radio"
+                      name="installmentMode"
+                      value="perInstallment"
+                      checked={formData.installmentMode === 'perInstallment'}
+                      onChange={(e) => setFormData({...formData, installmentMode: e.target.value})}
+                      className="sr-only peer"
+                    />
+                    <div className="flex items-center justify-center gap-2 p-3 border-2 border-gray-300 rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-100 peer-checked:text-blue-700 transition-all text-sm">
+                      <FiHash size={18} />
+                      <span className="font-medium">Valor por Parcela</span>
+                    </div>
+                  </label>
+                </div>
+                
+                {/* Descrição do Modo Selecionado */}
+                <p className="text-sm text-blue-600">
+                  {formData.installmentMode === 'total' 
+                    ? `O valor informado (R$ ${parseFloat(formData.amount || 0).toFixed(2)}) será dividido em ${formData.installments}x parcelas`
+                    : `Cada parcela de R$ ${parseFloat(formData.amount || 0).toFixed(2)} será multiplicada por ${formData.installments}x`
+                  }
+                </p>
+                
+                {/* Resultado do Cálculo */}
+                {calculatedValues.showCalculation && parseFloat(formData.amount) > 0 && (
+                  <div className="flex justify-between items-center p-3 bg-white rounded-lg border border-blue-200">
+                    <div className="text-sm text-gray-600">
+                      {formData.installmentMode === 'total' ? 'Valor de cada parcela:' : 'Valor total da compra:'}
+                    </div>
+                    <div className="text-lg font-bold text-blue-700">
+                      R$ {formData.installmentMode === 'total' 
+                        ? calculatedValues.installmentValue.toFixed(2)
+                        : calculatedValues.totalAmount.toFixed(2)
+                      }
+                    </div>
+                  </div>
+                )}
+                
+                {/* Resumo Completo */}
+                {calculatedValues.showCalculation && parseFloat(formData.amount) > 0 && (
+                  <div className="text-center text-sm font-medium text-blue-800 bg-blue-100 rounded-lg p-2">
+                    {formData.installments}x de R$ {calculatedValues.installmentValue.toFixed(2)} = R$ {calculatedValues.totalAmount.toFixed(2)}
+                  </div>
+                )}
+              </div>
+            )}
             
             <div className="flex gap-3 justify-end pt-4">
               <Button

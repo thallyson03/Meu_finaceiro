@@ -234,3 +234,7 @@ cd C:\Users\PICHAU\Downloads\meu-planejamento-financeiro-completo\web && npm run
 **🎉 Pronto para usar!** 💰✨
 
 
+
+
+
+

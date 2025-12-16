@@ -367,3 +367,7 @@ Para mostrar o gráfico novamente em mobile, basta remover a classe:
 **✨ Otimização mobile concluída!** 🚀📱
 
 
+
+
+
+

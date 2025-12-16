@@ -1,8 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import './utils/responsive.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import './utils/responsive.css';
+/* ========================================
+   TEMA MOBILLS - Estilos Globais
+   ======================================== */
+
+:root {
+  --mobills-primary: #00D09C;
+  --mobills-primary-dark: #00B386;
+  --mobills-primary-light: #E6FBF5;
+  --mobills-secondary: #2D3436;
+  --mobills-dark: #1A1D1E;
+  --mobills-income: #00D09C;
+  --mobills-expense: #FF6B6B;
+  --mobills-background: #F5F6FA;
+}
 
 html, body, #root { 
   height: 100%; 
@@ -12,16 +28,76 @@ html, body, #root {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #F5F6FA;
+  color: #2D3436;
 }
 
-/* Responsividade global */
+/* Box Sizing */
 * {
   box-sizing: border-box;
+}
+
+/* ========================================
+   Scrollbar Estilo Mobills
+   ======================================== */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* ========================================
+   Inputs Estilo Mobills
+   ======================================== */
+
+input, select, textarea {
+  font-family: inherit;
+}
+
+input:focus, 
+select:focus, 
+textarea:focus,
+button:focus {
+  outline: none;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"],
+input[type="date"],
+select,
+textarea {
+  border-radius: 12px;
+  border: 2px solid #E5E7EB;
+  transition: all 0.2s ease;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="date"]:focus,
+select:focus,
+textarea:focus {
+  border-color: #00D09C;
+  box-shadow: 0 0 0 3px rgba(0, 208, 156, 0.1);
 }
 
 /* Prevenir zoom em inputs no iOS */
@@ -37,26 +113,10 @@ body {
   }
 }
 
-/* Scrollbar Styling */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
+/* ========================================
+   Animações
+   ======================================== */
 
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-
-/* Animações */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -80,12 +140,13 @@ body {
 }
 
 @keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 .animate-fade-in {
@@ -96,55 +157,17 @@ body {
   animation: slideIn 0.3s ease-out;
 }
 
-/* Utilities */
-.shadow-card {
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-}
+/* ========================================
+   Loading Spinner Mobills
+   ======================================== */
 
-.shadow-card-hover {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-/* Gradient backgrounds */
-.gradient-blue {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.gradient-green {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-}
-
-.gradient-red {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-}
-
-.gradient-purple {
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-}
-
-/* Focus styles */
-input:focus, 
-select:focus, 
-textarea:focus,
-button:focus {
-  outline: none;
-}
-
-/* Transitions */
-* {
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform;
-  transition-duration: 150ms;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Loading */
 .loading-spinner {
-  border: 3px solid #f3f4f6;
-  border-top: 3px solid #3b82f6;
+  border: 3px solid #E6FBF5;
+  border-top: 3px solid #00D09C;
   border-radius: 50%;
   width: 40px;
   height: 40px;
-  animation: spin 1s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
@@ -152,12 +175,82 @@ button:focus {
   100% { transform: rotate(360deg); }
 }
 
+/* ========================================
+   Utilitários
+   ======================================== */
+
+.shadow-mobills {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.shadow-mobills-lg {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Gradients Mobills */
+.gradient-mobills {
+  background: linear-gradient(135deg, #00D09C 0%, #00B386 100%);
+}
+
+.gradient-income {
+  background: linear-gradient(135deg, #00D09C 0%, #00B386 100%);
+}
+
+.gradient-expense {
+  background: linear-gradient(135deg, #FF6B6B 0%, #FF5252 100%);
+}
+
 /* Card hover effect */
 .card-hover {
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .card-hover:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* ========================================
+   Cores de Status
+   ======================================== */
+
+.text-income { color: #00D09C; }
+.text-expense { color: #FF6B6B; }
+.bg-income { background-color: #00D09C; }
+.bg-expense { background-color: #FF6B6B; }
+.bg-income-light { background-color: #E6FBF5; }
+.bg-expense-light { background-color: #FFE8E8; }
+
+/* ========================================
+   Transitions
+   ======================================== */
+
+* {
+  transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ========================================
+   Progress Bar Mobills
+   ======================================== */
+
+.progress-bar {
+  background-color: #E5E7EB;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  background: linear-gradient(90deg, #00D09C, #00B386);
+  border-radius: 10px;
+  transition: width 0.5s ease;
+}
+
+.progress-fill-danger {
+  background: linear-gradient(90deg, #FF6B6B, #FF5252);
+}
+
+.progress-fill-warning {
+  background: linear-gradient(90deg, #F59E0B, #D97706);
 }

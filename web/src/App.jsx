@@ -6,6 +6,9 @@ import Incomes from './pages/Incomes'
 import Budget from './pages/Budget'
 import Installments from './pages/Installments'
 import MonthlyBalance from './pages/MonthlyBalance'
+import Goals from './pages/Goals'
+import Recurring from './pages/Recurring'
+import Accounts from './pages/Accounts'
 import Settings from './pages/Settings'
 import Login from './pages/Login'
 import Sidebar from './components/Sidebar'
@@ -27,7 +30,7 @@ export default function App(){
   const isLoginPage = location.pathname === '/login'
   
   return (
-    <div className="min-h-screen flex bg-gray-50">
+    <div className="min-h-screen flex bg-[#F5F6FA]">
       {!isLoginPage && <Sidebar />}
       <main className={`flex-1 ${isLoginPage ? '' : 'p-4 sm:p-6 lg:p-8 pt-20 lg:pt-6 overflow-auto'}`}>
         <Routes>
@@ -72,6 +75,24 @@ export default function App(){
           <Route path="/balance" element={
             <PrivateRoute>
               <MonthlyBalance />
+            </PrivateRoute>
+          } />
+          
+          <Route path="/goals" element={
+            <PrivateRoute>
+              <Goals />
+            </PrivateRoute>
+          } />
+          
+          <Route path="/recurring" element={
+            <PrivateRoute>
+              <Recurring />
+            </PrivateRoute>
+          } />
+          
+          <Route path="/accounts" element={
+            <PrivateRoute>
+              <Accounts />
             </PrivateRoute>
           } />
           

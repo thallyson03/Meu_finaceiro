@@ -614,3 +614,7 @@ Se encontrar algum problema de responsividade:
 **🎉 Gerencie suas finanças em qualquer dispositivo!** 💰📱💻
 
 
+
+
+
+

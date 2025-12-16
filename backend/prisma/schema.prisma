@@ -12,10 +12,14 @@ model User {
   email     String    @unique
   password  String
   name      String?
+  theme     String    @default("light") // "light" ou "dark"
   createdAt DateTime  @default(now())
   transactions Transaction[]
   invoiceUploads InvoiceUpload[]
   budgets Budget[]
+  goals Goal[]
+  recurringTransactions RecurringTransaction[]
+  accounts Account[]
 }
 
 model Transaction {
@@ -30,6 +34,8 @@ model Transaction {
   card        String?
   installments Int?
   isPaid      Boolean  @default(true)
+  accountId   Int?     // Conta bancária associada
+  account     Account? @relation(fields: [accountId], references: [id])
   createdAt   DateTime @default(now())
 }
 
@@ -53,4 +59,60 @@ model Budget {
   createdAt DateTime @default(now())
   
   @@unique([userId, month, year, category])
+}
+
+// 🎯 Metas Financeiras
+model Goal {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  name        String   // "Viagem para praia", "Reserva de emergência"
+  targetAmount Float   // Valor alvo (ex: 5000)
+  currentAmount Float  @default(0) // Valor atual poupado
+  deadline    DateTime? // Data limite (opcional)
+  category    String   @default("Outros") // Categoria da meta
+  color       String   @default("#3B82F6") // Cor para visualização
+  icon        String   @default("piggy-bank") // Ícone
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// 🔄 Lançamentos Recorrentes
+model RecurringTransaction {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  description String   // "Aluguel", "Netflix", "Salário"
+  category    String
+  amount      Float
+  type        String   // "income" ou "expense"
+  frequency   String   // "monthly", "weekly", "yearly"
+  dayOfMonth  Int?     // Dia do mês (1-31) para frequência mensal
+  dayOfWeek   Int?     // Dia da semana (0-6) para frequência semanal
+  startDate   DateTime // Data de início
+  endDate     DateTime? // Data de fim (opcional)
+  isActive    Boolean  @default(true)
+  lastGenerated DateTime? // Última vez que gerou transação
+  accountId   Int?     // Conta bancária associada
+  account     Account? @relation(fields: [accountId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// 🏦 Contas Bancárias
+model Account {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  name        String   // "Nubank", "Itaú", "Poupança"
+  type        String   // "checking", "savings", "credit", "investment"
+  balance     Float    @default(0)
+  color       String   @default("#3B82F6")
+  icon        String   @default("bank")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  transactions Transaction[]
+  recurringTransactions RecurringTransaction[]
 }

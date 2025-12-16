@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import api from '../api/api'
 import Card from '../components/Card'
-import { PieChart, Pie, Cell, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart, Area } from 'recharts'
+import { PieChart, Pie, Cell, LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { FiTrendingUp, FiTrendingDown, FiDollarSign, FiCalendar, FiCheckCircle, FiAlertCircle } from 'react-icons/fi'
 
 export default function MonthlyBalance(){
@@ -62,7 +62,8 @@ export default function MonthlyBalance(){
   // Dados para gráfico de pizza
   const byCategory = transactionData?.byCategory || {}
   const pieData = Object.entries(byCategory).map(([name, value]) => ({ name, value }))
-  const COLORS = ['#3B82F6', '#8B5CF6', '#EC4899', '#10B981', '#F59E0B', '#EF4444']
+  // Paleta suave e delicada
+  const COLORS = ['#93C5FD', '#C4B5FD', '#F9A8D4', '#86EFAC', '#FDE68A', '#FECACA', '#A5F3FC', '#FED7AA']
 
   return (
     <div className="space-y-6">
@@ -161,9 +162,8 @@ export default function MonthlyBalance(){
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Saldo Acumulado ao Longo do Tempo</h3>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={months}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
-            <YAxis />
+            <XAxis dataKey="month" axisLine={false} tickLine={false} />
+            <YAxis axisLine={false} tickLine={false} />
             <Tooltip 
               formatter={(value) => `R$ ${value.toFixed(2)}`}
               contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px' }}
@@ -172,9 +172,9 @@ export default function MonthlyBalance(){
               type="monotone" 
               dataKey="accumulated" 
               name="Saldo Acumulado" 
-              stroke="#8B5CF6" 
+              stroke="#C4B5FD" 
               strokeWidth={3}
-              dot={{ fill: '#8B5CF6', r: 6 }}
+              dot={{ fill: '#C4B5FD', r: 6 }}
             />
           </LineChart>
         </ResponsiveContainer>
@@ -193,14 +193,13 @@ export default function MonthlyBalance(){
           </div>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={projection.projection}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
+              <XAxis dataKey="month" axisLine={false} tickLine={false} />
+              <YAxis axisLine={false} tickLine={false} />
               <Tooltip 
                 formatter={(value) => `R$ ${value.toFixed(2)}`}
                 contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px' }}
               />
-              <Bar dataKey="amount" name="Parcelas a Pagar" fill="#F59E0B" radius={[8, 8, 0, 0]} />
+              <Bar dataKey="amount" name="Parcelas a Pagar" fill="#FDE68A" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
           <div className="mt-4 grid grid-cols-2 md:grid-cols-6 gap-3">
@@ -370,16 +369,15 @@ export default function MonthlyBalance(){
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Comparação Detalhada - Mês a Mês</h3>
         <ResponsiveContainer width="100%" height={400}>
           <BarChart data={months}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
-            <YAxis />
+            <XAxis dataKey="month" axisLine={false} tickLine={false} />
+            <YAxis axisLine={false} tickLine={false} />
             <Tooltip 
               formatter={(value) => `R$ ${value.toFixed(2)}`}
               contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px' }}
             />
             <Legend />
-            <Bar dataKey="income" name="Receitas" fill="#10B981" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="expense" name="Despesas" fill="#EF4444" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="income" name="Receitas" fill="#86EFAC" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="expense" name="Despesas" fill="#FECACA" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </Card>

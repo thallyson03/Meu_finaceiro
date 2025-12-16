@@ -9,18 +9,19 @@ export default function Input({
   required = false,
   error,
   icon: Icon,
+  className = '',
   ...props 
 }) {
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          {label} {required && <span className="text-red-500">*</span>}
+        <label className="block text-sm font-semibold text-[#2D3436] mb-2">
+          {label} {required && <span className="text-[#FF6B6B]">*</span>}
         </label>
       )}
       <div className="relative">
         {Icon && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
             <Icon size={20} />
           </div>
         )}
@@ -30,15 +31,13 @@ export default function Input({
           onChange={onChange}
           placeholder={placeholder}
           required={required}
-          className={`w-full px-4 py-2.5 ${Icon ? 'pl-10' : ''} border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
-            error ? 'border-red-500 focus:ring-red-500' : ''
-          }`}
+          className={`w-full px-4 py-3 ${Icon ? 'pl-12' : ''} bg-[#F5F6FA] border-2 border-transparent rounded-xl focus:border-[#00D09C] focus:bg-white focus:shadow-[0_0_0_3px_rgba(0,208,156,0.1)] transition-all duration-200 text-[#2D3436] placeholder-gray-400 ${
+            error ? 'border-[#FF6B6B] bg-[#FFE8E8]' : ''
+          } ${className}`}
           {...props}
         />
       </div>
-      {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
+      {error && <p className="mt-2 text-sm text-[#FF6B6B] font-medium">{error}</p>}
     </div>
   )
 }
-
-

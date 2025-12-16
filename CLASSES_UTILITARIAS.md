@@ -532,3 +532,7 @@ Com essas classes utilitárias, você pode criar layouts responsivos rapidamente
 **🎨 Use e abuse das classes utilitárias!** 🚀✨
 
 
+
+
+
+

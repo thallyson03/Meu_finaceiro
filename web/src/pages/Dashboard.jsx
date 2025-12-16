@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import api from '../api/api'
 import StatCard from '../components/StatCard'
 import Card from '../components/Card'
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts'
 import { FiDollarSign, FiTrendingUp, FiTrendingDown, FiTarget, FiCheckCircle, FiAlertCircle, FiCreditCard, FiCalendar, FiClock, FiBarChart2, FiArrowRight } from 'react-icons/fi'
 
 export default function Dashboard(){
@@ -66,7 +66,8 @@ export default function Dashboard(){
 
   // Dados para gráficos
   const pieData = Object.entries(byCategory).map(([name, value]) => ({ name, value }))
-  const COLORS = ['#3B82F6', '#8B5CF6', '#EC4899', '#10B981', '#F59E0B', '#EF4444']
+  // Paleta Mobills
+  const COLORS = ['#00D09C', '#FF6B6B', '#3B82F6', '#F59E0B', '#8B5CF6', '#EC4899', '#06B6D4', '#84CC16']
 
   // Comparativo mensal
   const comparisonData = [
@@ -99,15 +100,9 @@ export default function Dashboard(){
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard Financeiro</h1>
-          <p className="text-gray-600 mt-1">Visão completa e em tempo real das suas finanças</p>
-        </div>
-        <div className="text-sm text-gray-500">
-          <FiCalendar className="inline mr-1" />
-          {new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold text-[#2D3436]">Dashboard</h1>
+        <p className="text-gray-500 mt-1">Visão completa das suas finanças</p>
       </div>
 
       {/* Main Stats - 6 cards em grid de 3 no mobile */}
@@ -219,7 +214,7 @@ export default function Dashboard(){
         {installmentsSummary.activeInstallments > 0 && (
           <Card className="bg-blue-50 border-blue-200">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3 text-blue-600">
+              <div className="flex items-center gap-3 text-[#00D09C]">
                 <FiCreditCard size={24} />
                 <div>
                   <p className="font-semibold">{installmentsSummary.activeInstallments} compras parceladas ativas</p>
@@ -230,7 +225,7 @@ export default function Dashboard(){
               </div>
               <button 
                 onClick={() => navigate('/installments')}
-                className="px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors flex items-center gap-1"
+                className="px-3 py-1 bg-[#00D09C] text-white rounded-lg text-sm hover:bg-[#00B386] transition-colors flex items-center gap-1"
               >
                 Ver <FiArrowRight />
               </button>
@@ -246,7 +241,7 @@ export default function Dashboard(){
             <h3 className="text-lg font-semibold text-gray-900">Próximas Parcelas (30 dias)</h3>
             <button 
               onClick={() => navigate('/installments')}
-              className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
+              className="text-[#00D09C] hover:text-[#00B386] text-sm font-medium flex items-center gap-1"
             >
               Ver todas <FiArrowRight />
             </button>
@@ -255,7 +250,7 @@ export default function Dashboard(){
             {upcomingInstallments.slice(0, 6).map((installment, idx) => (
               <div key={idx} className="p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-100">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-blue-700">
+                  <span className="text-xs font-medium text-[#00B386]">
                     {installment.installmentNumber}/{installment.totalInstallments}
                   </span>
                   <span className="text-sm font-bold text-gray-900">
@@ -280,16 +275,15 @@ export default function Dashboard(){
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Mês Atual</h3>
           {comparisonData.some(d => d.value > 0) ? (
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={comparisonData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
+              <BarChart data={comparisonData} layout="vertical">
+                <XAxis type="number" hide />
+                <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} width={70} />
                 <Tooltip formatter={(value) => `R$ ${value.toFixed(2)}`} />
-                <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                <Bar dataKey="value" radius={[0, 8, 8, 0]} barSize={35}>
                   {comparisonData.map((entry, index) => (
                     <Cell 
                       key={`cell-${index}`} 
-                      fill={index === 0 ? '#10B981' : index === 1 ? '#EF4444' : balance >= 0 ? '#3B82F6' : '#F59E0B'} 
+                      fill={index === 0 ? '#00D09C' : index === 1 ? '#FF6B6B' : balance >= 0 ? '#3B82F6' : '#F59E0B'} 
                     />
                   ))}
                 </Bar>
@@ -344,7 +338,7 @@ export default function Dashboard(){
             <h3 className="text-lg font-semibold text-gray-900">Parcelas Futuras</h3>
             <button 
               onClick={() => navigate('/balance')}
-              className="text-blue-600 hover:text-blue-700 text-xs font-medium"
+              className="text-[#00D09C] hover:text-[#00B386] text-xs font-medium"
             >
               Ver mais
             </button>
@@ -352,11 +346,10 @@ export default function Dashboard(){
           {projection.length > 0 ? (
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={projection.slice(0, 6)}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                <YAxis />
+                <XAxis dataKey="month" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis axisLine={false} tickLine={false} />
                 <Tooltip formatter={(value) => `R$ ${value.toFixed(2)}`} />
-                <Bar dataKey="amount" fill="#F59E0B" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="amount" fill="#00D09C" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -378,7 +371,7 @@ export default function Dashboard(){
             <h3 className="text-lg font-semibold text-gray-900">Orçamento por Categoria</h3>
             <button 
               onClick={() => navigate('/budget')}
-              className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
+              className="text-[#00D09C] hover:text-[#00B386] text-sm font-medium flex items-center gap-1"
             >
               Gerenciar <FiArrowRight />
             </button>
@@ -425,7 +418,7 @@ export default function Dashboard(){
               <p className="text-sm mt-1">Defina limites para suas categorias</p>
               <button 
                 onClick={() => navigate('/budget')}
-                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors"
+                className="mt-4 px-4 py-2 bg-[#00D09C] text-white rounded-lg text-sm hover:bg-[#00B386] transition-colors"
               >
                 Criar Orçamento
               </button>
@@ -439,7 +432,7 @@ export default function Dashboard(){
             <h3 className="text-lg font-semibold text-gray-900">Detalhamento de Gastos</h3>
             <button 
               onClick={() => navigate('/transactions')}
-              className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
+              className="text-[#00D09C] hover:text-[#00B386] text-sm font-medium flex items-center gap-1"
             >
               Ver todas <FiArrowRight />
             </button>
@@ -490,7 +483,7 @@ export default function Dashboard(){
               <p className="text-sm mt-1">Comece a rastrear seus gastos</p>
               <button 
                 onClick={() => navigate('/transactions')}
-                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors"
+                className="mt-4 px-4 py-2 bg-[#00D09C] text-white rounded-lg text-sm hover:bg-[#00B386] transition-colors"
               >
                 Adicionar Transação
               </button>
@@ -581,7 +574,7 @@ export default function Dashboard(){
             onClick={() => navigate('/balance')}
             className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 rounded-lg hover:shadow-md transition-all text-left"
           >
-            <FiBarChart2 className="text-blue-600 mb-2" size={24} />
+            <FiBarChart2 className="text-[#00D09C] mb-2" size={24} />
             <p className="font-semibold text-gray-900 text-sm">Ver Análises</p>
             <p className="text-xs text-gray-600 mt-1">Relatórios</p>
           </button>

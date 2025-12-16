@@ -6,6 +6,10 @@ const invRoutes = require('./routes/invoices.routes');
 const incomesRoutes = require('./routes/incomes.routes');
 const budgetsRoutes = require('./routes/budgets.routes');
 const installmentsRoutes = require('./routes/installments.routes');
+const goalsRoutes = require('./routes/goals.routes');
+const recurringRoutes = require('./routes/recurring.routes');
+const accountsRoutes = require('./routes/accounts.routes');
+const exportRoutes = require('./routes/export.routes');
 const errorMiddleware = require('./middlewares/error.middleware');
 
 const app = express();
@@ -19,6 +23,10 @@ app.use('/api/incomes', incomesRoutes);
 app.use('/api/budgets', budgetsRoutes);
 app.use('/api/budget', budgetsRoutes); // Alias para compatibilidade
 app.use('/api/installments', installmentsRoutes);
+app.use('/api/goals', goalsRoutes);
+app.use('/api/recurring', recurringRoutes);
+app.use('/api/accounts', accountsRoutes);
+app.use('/api/export', exportRoutes);
 
 app.use(errorMiddleware);
 

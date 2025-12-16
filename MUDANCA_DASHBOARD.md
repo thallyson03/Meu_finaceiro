@@ -304,3 +304,7 @@ Dashboard → Sidebar → Balanceamento (📊)
 **✨ Dashboard otimizado e pronto para uso!** 🚀
 
 
+
+
+
+
